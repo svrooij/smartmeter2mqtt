@@ -1,0 +1,33 @@
+{
+  "name": "smartmeter2mqtt",
+  "version": "0.0.1",
+  "description": "Publish data from your Smartmeter with a P1 interface to your MQTT server.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/svrooij/smartmeter2mqtt.git"
+  },
+  "keywords": [
+    "mqtt-smarthome",
+    "P1",
+    "smart",
+    "meter",
+    "electricity"
+  ],
+  "author": "Stephan van Rooij <github@svrooij.nl> (https://svrooij.nl)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/svrooij/smartmeter2mqtt/issues"
+  },
+  "homepage": "https://github.com/svrooij/smartmeter2mqtt#readme",
+  "devDependencies": {
+    "standard": "^12.0.1"
+  },
+  "dependencies": {
+    "@serialport/parser-readline": "^2.0.2",
+    "serialport": "^7.1.5"
+  }
+}
