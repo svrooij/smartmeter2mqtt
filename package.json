@@ -4,7 +4,9 @@
   "description": "Publish data from your Smartmeter with a P1 interface to your MQTT server.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha tests/parser-tests.js",
+    "lint": "standard",
+    "lint-fix": "standard --fix"
   },
   "repository": {
     "type": "git",
@@ -24,10 +26,19 @@
   },
   "homepage": "https://github.com/svrooij/smartmeter2mqtt#readme",
   "devDependencies": {
+    "assert": "^2.0.0",
+    "eslint": "^5.16.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.17.2",
+    "eslint-plugin-node": "^9.0.1",
+    "eslint-plugin-promise": "^4.1.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "mocha": "^6.1.4",
     "standard": "^12.0.1"
   },
   "dependencies": {
     "@serialport/parser-readline": "^2.0.2",
-    "serialport": "^7.1.5"
+    "serialport": "^7.1.5",
+    "yargs": "^13.2.4"
   }
 }

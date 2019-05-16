@@ -1,5 +1,14 @@
 # Smartmeter2mqtt
 
+This application can listen to your (Dutch) Smartmeter with a P1 connector, and send the data to several sources. I plan to support the following methods:
+
+- TCP Socket
+- JSON Endpoint
+- Website with websocket for server side refresh
+- MQTT
+
+Supporting other services like some website where you can monitor historic data is also possible. The P1 Reader just emits events.
+
 ## Sample data
 
 The Keifa meter outputs the following data as you connect to the serial connection.
