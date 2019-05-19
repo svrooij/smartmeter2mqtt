@@ -1,13 +1,20 @@
 # Smartmeter2mqtt
 
-This application can listen to your (Dutch) Smartmeter with a P1 connector, and send the data to several sources. I plan to support the following methods:
+[![npm](https://img.shields.io/npm/v/smartmeter2mqtt.svg?style=flat-square)](https://www.npmjs.com/package/smartmeter2mqtt)
+[![travis](https://img.shields.io/travis/svrooij/smartmeter2mqtt.svg?style=flat-square)](https://travis-ci.org/svrooij/smartmeter2mqtt)
+[![mqtt-smarthome](https://img.shields.io/badge/mqtt-smarthome-blue.svg?style=flat-square)](https://github.com/mqtt-smarthome/mqtt-smarthome)
+[![PayPal][badge_paypal_donate]][paypal-donations]
+[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg?style=flat-square)](https://github.com/semantic-release/semantic-release)
 
-- TCP Socket
-- JSON Endpoint
-- Website with websocket for server side refresh
-- MQTT
+This application can listen to your (Dutch) Smartmeter with a P1 connector, and send the data to several outputs. I plan to support the following methods:
 
-Supporting other services like some website where you can monitor historic data is also possible. The P1 Reader just emits events.
+- [x] JSON Endpoint
+- [x] Raw Endpoint
+- [x] Website with ajax for client side refresh
+- [ ] Website with websocket for server side refresh
+- [ ] MQTT
+
+Supporting other services like some website where you can monitor historic data is also possible. Just check-out the [output folder](./lib/output) and how they are linked in the [index.js](./index.js)
 
 ## Getting started
 
@@ -16,7 +23,7 @@ Supporting other services like some website where you can monitor historic data 
 3. Start the application (for testing)
 4. Run in background using [PM2](https://pm2.io/doc/en/runtime/overview/)
 
-## Supported input connections
+## Inputs
 
 This application supports two inputs, you'll need either one.
 
@@ -24,14 +31,22 @@ For a **direct connection** you'll need a Smartmeter cable like [this one at sos
 
 You can also connect to a **TCP socket**, this way you don't need the device running this program to be on a device near your meter. You can also check out this [ESP8266 P1 reader](http://www.esp8266thingies.nl/wp/), it creates a TCP socket for your meter.
 
-## Output -> JSON tcp socket
+## Outputs
 
-This output creates a tcp socket where you will receive a newline delimeter json stream, to be used in your other applications.
-Start it with the `--tcp-server [portnumer]` parameter. You can then see immediate result when you connect too it with for instance telnet `telnet [ip-of-server] [specified-port]`. Maximum 5 connections.
+This application supports multiple (concurrent) outputs. Enable at least one!
 
-## Output -> Raw tcp socket
+### Output -> Webserver
 
-This output creates a tcp socket where you'll receive the raw data as it comes in. This is usefull if you want to debug the data coming in and don't want to restart your smartmeter2mqtt application all the time. This can in turn be used as an TCP socket input. Start it with `--raw-tcp-server [port]`. Maximum 5 connections.
+You can enable the webserver. This will enable you to see a simple webpage with the latest data from your smartmeter (PR with styling appreciated!). It will also enable an endpoint that responds with json with all the available data. Start this output with `--web-server [port]`, and the webpage will be available on `http://[ip-of-server]:[port]/` and the json endpoint will be avaiable on `http://[ip-of-server]:[port]/api/reading`.
+
+### Output -> JSON tcp socket
+
+This output creates a tcp socket where you will receive a newline delimeted json stream, to be used in your other applications.
+Start it with the `--tcp-server [portnumer]` parameter. You can then see immediate result when you connect too it with for instance telnet `telnet [ip-of-server] [specified-port]`. Maximum 3 connections.
+
+### Output -> Raw tcp socket
+
+This output creates a tcp socket where you'll receive the raw data as it comes in. This is usefull if you want to debug the data coming in and don't want to restart your smartmeter2mqtt application all the time. This can in turn be used as an TCP socket input. Start it with `--raw-tcp-server [port]`. Maximum 3 connections.
 
 Conect to it with `telnet [ip-of-server] [specified-port]` and see the data coming in on your windows machine.
 
@@ -40,7 +55,7 @@ This socket can also be used in domoticz as **P1-Wifi Gateway**.
 ## Usage
 
 ```bash
-smartmeter2mqtt 0.0.1
+smartmeter2mqtt 1.0.0
 Publish data from your Smartmeter with a P1 interface to your MQTT server.
 
 Read from P1 to USB serial:
@@ -52,6 +67,7 @@ smartmeter2mqtt --socket host:port [options]
 Options:
   --port            The serial port to read, P1 to serial usb, eg. '/dev/ttyUSB0'
   --socket          The tcp socket to read, if reading from serial to network device, eg. '192.168.0.3:3000'
+  --web-server      Expose webserver on this port                       [number]
   --tcp-server      Expose JSON TCP socket on this port                 [number]
   --raw-tcp-server  Expose RAW TCP socket on this port                  [number]
   --debug           Enable debug output                                [boolean]
@@ -61,7 +77,7 @@ Options:
 
 ## DSMR - P1 Sample data
 
-The Keifa meter outputs the following data as you connect to the serial connection.
+My Keifa meter outputs the following data as you connect to the serial connection. Other meters should be supported as well. Else please start with `--debug` and send one full output to us.
 
 ```text
 /KFM5KAIFA-METER            // Header, Manufacturer specific
@@ -91,3 +107,14 @@ The Keifa meter outputs the following data as you connect to the serial connecti
 0-2:24.2.1(190514210000S)(01543.012*m3)  // Gas usages timestamp and gas usage
 !90E4                       // CRC
 ```
+
+### Parsing data
+
+The [p1-reader](./lib/p1-reader.js) is responsible for connecting to one of the sources, it is an eventemitter that outputs the following events `line`, `dsmr`, `raw`, `usageChange`. It will send each line to the [p1-parser](./lib/p1-parser.js) for parsing and checking the message. To support extra data, you'll need to take a look at the [p1-map](./lib/p1-map.js) file, it contains the **id** used in the DSMR standard, the name in the result object and a **valueRetriever**. The **valueRetriever** is passed an array of values that where between brackets in the current line.
+
+Supporting other data fields is just a matter of changing the **p1-map** file.
+
+[badge_paypal_donate]: https://svrooij.nl/badges/paypal_donate.svg
+[badge_patreon]: https://svrooij.nl/badges/patreon.svg
+[paypal-donations]: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=T9XFJYUSPE4SG
+[patreon]: https://www.patreon.com/svrooij

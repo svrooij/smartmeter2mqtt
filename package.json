@@ -1,10 +1,11 @@
 {
   "name": "smartmeter2mqtt",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Publish data from your Smartmeter with a P1 interface to your MQTT server.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha tests/parser-tests.js",
+    "test": "standard && npm run parser-test",
+    "parser-test": "mocha tests/parser-tests.js",
     "lint": "standard",
     "lint-fix": "standard --fix"
   },
@@ -28,6 +29,7 @@
   "dependencies": {
     "@serialport/parser-readline": "^2.0.2",
     "crc": "^3.8.0",
+    "express": "^4.17.0",
     "serialport": "^7.1.5",
     "yargs": "^13.2.4"
   },
@@ -42,8 +44,14 @@
     "mocha": "^6.1.4",
     "standard": "^12.0.1"
   },
-  "bin":{
+  "bin": {
     "smartmeter2mqtt": "./index.js"
-  }
-
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "package.json",
+    "index.js",
+    "lib"
+  ]
 }

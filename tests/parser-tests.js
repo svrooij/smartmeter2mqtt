@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 const assert = require('assert')
 const P1Parser = require('../lib/p1-parser')
+const P1Map = require('../lib/p1-map')
 const fs = require('fs')
 describe('P1Parser', function () {
   it('Should parse timestamp string', function () {
@@ -18,7 +19,7 @@ describe('P1Parser', function () {
     assert.strictEqual(parser.addLine('1-0:1.8.1(002000.123*kWh)'), false, 'Add usage line should not return true')
     assert.strictEqual(parser.addLine('1-0:1.8.2(001000.456*kWh)'), false, 'Add usage line should not return true')
     assert.strictEqual(parser.addLine('!90E4'), true, 'Add end should return true')
-    assert(parser.result().powerSn, 'Serial not set')
+    assert.strictEqual(parser.result().powerSn, '453xxxxxxxxxx', 'Serial not set')
   })
 
   it('Should check crc', function () {
@@ -28,6 +29,29 @@ describe('P1Parser', function () {
     lines.forEach((line) => {
       parser.addLine(line.trim())
     })
+    // console.log(parser.result()) // to see how the parser handles the sample message
     assert.strictEqual(parser.result().crc, true, 'CRC should be true')
   })
 })
+
+describe('P1Map', function () {
+  it('should have unique ids', function () {
+    const ids = P1Map.map((val) => val.id)
+
+    const uniqueIds = ids.filter(distinctFilter)
+    const duplicates = ids.length - uniqueIds.length
+    assert.strictEqual(duplicates, 0, `You have ${duplicates} duplicate ids`)
+  })
+
+  it('should have unique names', function () {
+    const ids = P1Map.map((val) => val.name)
+
+    const uniqueIds = ids.filter(distinctFilter)
+    const duplicates = ids.length - uniqueIds.length
+    assert.strictEqual(duplicates, 0, `You have ${duplicates} duplicate names`)
+  })
+})
+
+const distinctFilter = function (item, index, array) {
+  return array.indexOf(item) >= index
+}
