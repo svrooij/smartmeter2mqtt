@@ -39,7 +39,7 @@ class Smartmeter {
   _startTcpServer () {
     this._reader.startParsing(true)
     console.log('Starting JSON TCP server on port %d', config['tcp-server'])
-    const TcpServer = require('./lib/tcp-server')
+    const TcpServer = require('./lib/output/tcp-server')
     this._tcpServer = new TcpServer(config['tcp-server'])
     this._reader.on('dsmr', data => {
       this._tcpServer.write(`${JSON.stringify(data)}\n`)
@@ -48,7 +48,7 @@ class Smartmeter {
 
   _startRawTcpServer () {
     console.log('Starting RAW TCP server on port %d', config['raw-tcp-server'])
-    const TcpServer = require('./lib/tcp-server')
+    const TcpServer = require('./lib/output/tcp-server')
     this._tcpServer = new TcpServer(config['raw-tcp-server'])
     this._reader.on('line', line => {
       this._tcpServer.write(`${line}\r\n`)
