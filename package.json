@@ -1,17 +1,18 @@
 {
   "name": "smartmeter2mqtt",
-  "version": "1.0.0",
+  "version": "0.0.0-development",
   "description": "Publish data from your Smartmeter with a P1 interface to your MQTT server.",
   "main": "index.js",
   "scripts": {
     "test": "standard && npm run parser-test",
     "parser-test": "mocha tests/parser-tests.js",
     "lint": "standard",
-    "lint-fix": "standard --fix"
+    "lint-fix": "standard --fix",
+    "semantic-release": "semantic-release"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/svrooij/smartmeter2mqtt.git"
+    "url": "https://github.com/svrooij/smartmeter2mqtt.git"
   },
   "keywords": [
     "mqtt-smarthome",
@@ -42,7 +43,8 @@
     "eslint-plugin-promise": "^4.1.1",
     "eslint-plugin-standard": "^4.0.0",
     "mocha": "^6.1.4",
-    "standard": "^12.0.1"
+    "standard": "^12.0.1",
+    "semantic-release": "^15.13.12"
   },
   "bin": {
     "smartmeter2mqtt": "./index.js"
