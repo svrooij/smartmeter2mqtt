@@ -25,6 +25,12 @@
     "url": "https://github.com/svrooij/smartmeter2mqtt/issues"
   },
   "homepage": "https://github.com/svrooij/smartmeter2mqtt#readme",
+  "dependencies": {
+    "@serialport/parser-readline": "^2.0.2",
+    "crc": "^3.8.0",
+    "serialport": "^7.1.5",
+    "yargs": "^13.2.4"
+  },
   "devDependencies": {
     "assert": "^2.0.0",
     "eslint": "^5.16.0",
@@ -36,9 +42,8 @@
     "mocha": "^6.1.4",
     "standard": "^12.0.1"
   },
-  "dependencies": {
-    "@serialport/parser-readline": "^2.0.2",
-    "serialport": "^7.1.5",
-    "yargs": "^13.2.4"
+  "bin":{
+    "smartmeter2mqtt": "./index.js"
   }
+
 }
