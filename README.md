@@ -21,7 +21,11 @@ Supporting other services like some website where you can monitor historic data 
 1. Install the application `npm install smartmeter2mqtt -g`
 2. Connect smartmeter
 3. Start the application (for testing)
-4. Run in background using [PM2](https://pm2.io/doc/en/runtime/overview/)
+4. Run in background using [PM2](https://pm2.io/doc/en/runtime/overview/) or run in docker container
+
+### Running in docker
+
+This app isn't build as a docker container in the registry just yet. PR's are welcome!
 
 ## Inputs
 
