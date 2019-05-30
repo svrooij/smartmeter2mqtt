@@ -1,3 +1,6 @@
 table {
   min-width: 350px;
 }
+.status {
+  color: orangered;
+}

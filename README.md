@@ -8,10 +8,10 @@
 
 This application can listen to your (Dutch) Smartmeter with a P1 connector, and send the data to several outputs. I plan to support the following methods:
 
-- [x] JSON Endpoint
-- [x] Raw Endpoint
-- [x] Website with ajax for client side refresh
-- [ ] Website with websocket for server side refresh
+- [x] JSON TCP socket
+- [x] Raw TCP socket
+- [x] Website with websockets (and ajax fallback) for client side refresh
+- [x] Http json endpoint to get the latest reading
 - [ ] MQTT
 
 Supporting other services like some website where you can monitor historic data is also possible. Just check-out the [output folder](./lib/output) and how they are linked in the [index.js](./index.js)
@@ -43,6 +43,8 @@ This application supports multiple (concurrent) outputs. Enable at least one!
 
 You can enable the webserver. This will enable you to see a simple webpage with the latest data from your smartmeter (PR with styling appreciated!). It will also enable an endpoint that responds with json with all the available data. Start this output with `--web-server [port]`, and the webpage will be available on `http://[ip-of-server]:[port]/` and the json endpoint will be avaiable on `http://[ip-of-server]:[port]/api/reading`.
 
+This webpage uses WebSockets for automatic server side data refresh. So the browser will show the latest data as it comes in. If your browser doesn't support websockets it should fallback on ajax loading.
+
 ### Output -> JSON tcp socket
 
 This output creates a tcp socket where you will receive a newline delimeted json stream, to be used in your other applications.
@@ -59,7 +61,7 @@ This socket can also be used in domoticz as **P1-Wifi Gateway**.
 ## Usage
 
 ```bash
-smartmeter2mqtt 1.0.0
+smartmeter2mqtt 1.0.1
 Publish data from your Smartmeter with a P1 interface to your MQTT server.
 
 Read from P1 to USB serial:
