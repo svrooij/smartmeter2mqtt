@@ -14,7 +14,7 @@ This application can listen to your (Dutch) Smartmeter with a P1 connector, and 
 - [x] Http json endpoint to get the latest reading
 - [ ] MQTT
 
-Supporting other services like some website where you can monitor historic data is also possible. Just check-out the [output folder](./lib/output) and how they are linked in the [index.js](./index.js)
+Supporting other services like some website where you can monitor historic data is also possible. Just check-out the [output folder](./lib/output) and specially the [debug-output](./lib/output/debug-output.js) how they are linked in the [index.js](./index.js). Please share your outputs with the rest by creating a PR.
 
 ## Getting started
 

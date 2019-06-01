@@ -11,6 +11,7 @@ class Smartmeter {
     console.log('- Smartmeter2mqtt by Stephan van Rooij -')
     console.log('- Press CTRL+C to close                -')
     console.log('----------------------------------------')
+    this.outputs = []
   }
 
   start () {
@@ -30,62 +31,53 @@ class Smartmeter {
       process.exit(2)
     }
     if (config['web-server'] > 0) this._startWebServer(config['web-server'])
-    if (config['tcp-server'] > 0) this._startTcpServer()
-    if (config['raw-tcp-server'] > 0) this._startRawTcpServer()
+    if (config['tcp-server'] > 0) {
+      this._reader.startParsing(true)
+      this._startTcpServer(config['tcp-server'])
+    }
+    if (config['raw-tcp-server'] > 0) this._startTcpServer(config['raw-tcp-server'], true)
 
     if (config.debug) this.debug()
+
+    if (this.outputs.length === 0) {
+      console.warn('No outputs enabled, you should enable at least one.')
+      process.exit(5)
+    }
   }
 
-  _startTcpServer () {
-    this._reader.startParsing(true)
-    console.log('- Output: JSON TCP socket on port %d', config['tcp-server'])
+  _startTcpServer (port, raw = false) {
+    console.log(`- Output: ${raw ? 'Raw' : 'JSON'} TCP socket on port ${port}`)
     const TcpServer = require('./lib/output/tcp-server')
-    this._tcpServer = new TcpServer(config['tcp-server'])
-    this._reader.on('dsmr', data => {
-      this._tcpServer.write(`${JSON.stringify(data)}\n`)
-    })
-  }
-
-  _startRawTcpServer () {
-    console.log('- Output: RAW TCP socket on port %d', config['raw-tcp-server'])
-    const TcpServer = require('./lib/output/tcp-server')
-    this._rawTcpServer = new TcpServer(config['raw-tcp-server'])
-    this._reader.on('line', line => {
-      this._rawTcpServer.write(`${line}\r\n`)
-    })
+    let tcpServer = new TcpServer()
+    tcpServer.start(this._reader, { port, rawSocket: raw === true })
+    this.outputs.push(tcpServer)
   }
 
   _startWebServer (port) {
     this._reader.startParsing(true)
     console.log('- Output: Webserver on port %d', port)
     const WebServer = require('./lib/output/web-server')
-    this._webserver = new WebServer(port)
-    this._reader.on('dsmr', data => {
-      this._webserver.setReading(data)
-    })
+    let webserver = new WebServer()
+    webserver.start(this._reader, { port: port })
+    this.outputs.push(webserver)
   }
 
   debug () {
     console.log('- Output: debug')
     this._reader.startParsing(true)
-    this._reader.on('dsmr', result => {
-      console.log(' - new reading %s', JSON.stringify(result, null, 2))
-    })
-    this._reader.on('usageChange', result => {
-      console.log(' - usageChange %s', result.message)
-    })
-    this._reader.on('errorMessage', message => {
-      console.log(' - errorMessage %s', message)
-    })
+
+    const DebugOutput = require('./lib/output/debug-output')
+    let debugOutput = new DebugOutput()
+    debugOutput.start(this._reader)
+    this.outputs.push(debugOutput)
   }
 
-  stop () {
-    if (this._tcpServer) this._tcpServer.close()
-    if (this._rawTcpServer) this._rawTcpServer.close()
-    if (this._webserver) this._webserver.close()
-    this._reader.close(() => {
-      process.exit()
+  async stop () {
+    await Promise.all(this.outputs.map(output => output.close())).catch(err => {
+      console.warn(err)
     })
+    await this._reader.close()
+    process.exit()
   }
 }
 
@@ -93,5 +85,6 @@ const smartmeter = new Smartmeter()
 smartmeter.start()
 
 process.on('SIGINT', () => {
+  console.log('Exiting....')
   smartmeter.stop()
 })
