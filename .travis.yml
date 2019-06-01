@@ -7,8 +7,16 @@ notifications:
 node_js:
   - 'node'
   - 'lts/*'
-after_success:
-  - npm run semantic-release
 branches:
   except:
     - /^v\d+\.\d+\.\d+$/
+jobs:
+  include:
+    # Release steps
+    - stage: release
+      node_js: lts/*
+      deploy:
+        provider: script
+        skip_cleanup: true
+        script:
+          - npm run semantic-release
