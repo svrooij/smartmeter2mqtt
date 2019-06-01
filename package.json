@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "standard && npm run parser-test",
-    "parser-test": "mocha tests/parser-tests.js",
+    "parser-test": "mocha tests/*-tests.js",
     "lint": "standard",
     "lint-fix": "standard --fix",
     "semantic-release": "semantic-release"
