@@ -14,14 +14,15 @@ This application can listen to your (Dutch) Smartmeter with a P1 connector, and 
 - [x] Http json endpoint to get the latest reading
 - [ ] MQTT
 
-Supporting other services like some website where you can monitor historic data is also possible. Just check-out the [output folder](./lib/output) and specially the [debug-output](./lib/output/debug-output.js) how they are linked in the [index.js](./index.js). Please share your outputs with the rest by creating a PR.
+Supporting other services like some website where you can monitor historic data is also possible. [Building your own output][#support-for-output-x] is explained a bit lower on this page.
 
 ## Getting started
 
-1. Install the application `npm install smartmeter2mqtt -g`
+1. Install the application `npm install smartmeter2mqtt -g --production`
 2. Connect smartmeter
 3. Start the application (for testing)
 4. Run in background using [PM2](https://pm2.io/doc/en/runtime/overview/) or run in docker container
+5. Send out a tweet that you are using smartmeter2mqtt on [twitter @svrooij](https://twitter.com/svrooij)
 
 ### Running in docker
 
@@ -31,7 +32,7 @@ This app isn't build as a docker container in the registry just yet. PR's are we
 
 This application supports two inputs, you'll need either one.
 
-For a **direct connection** you'll need a Smartmeter cable like [this one at sossolution](https://www.sossolutions.nl/slimme-meter-kabel), and connect it to a free usb port on the device reading the meter.
+For a **direct connection** you'll need a Smartmeter cable like [this one at sossolutions](https://www.sossolutions.nl/slimme-meter-kabel?referal=svrooij), and connect it to a free usb port on the device reading the meter.
 
 You can also connect to a **TCP socket**, this way you don't need the device running this program to be on a device near your meter. You can also check out this [ESP8266 P1 reader](http://www.esp8266thingies.nl/wp/), it creates a TCP socket for your meter.
 
@@ -61,7 +62,7 @@ This socket can also be used in domoticz as **P1-Wifi Gateway**.
 ## Usage
 
 ```bash
-smartmeter2mqtt 1.0.1
+smartmeter2mqtt 0.0.0-dev
 Publish data from your Smartmeter with a P1 interface to your MQTT server.
 
 Read from P1 to USB serial:
@@ -81,7 +82,37 @@ Options:
   -h, --help        Show help                                          [boolean]
 ```
 
-## DSMR - P1 Sample data
+## Developer section
+
+This section is for the curious ones.
+
+### Support for output X
+
+This package comes with several outputs, they all extend [Output](./lib/output/output.js). Every new output should implement the `start(p1Reader, options)` method. They all get the instance of the current [P1Reader](./lib/p1-reader.js). So your new output should subscribe to one of the events. All events are defined in [P1ReaderEvents](./lib/p1-reader-events.js) and you should use the statics from the class, (even though they are just strings).
+
+- **P1ReaderEvents.ParsedResult** to get the parsed result (if crc check validates), probably the one you want.
+- **P1ReaderEvents.UsageChange** to get the changes in current usage. Already computed you dont have to.
+- **P1ReaderEvents.Line** to get every line when they come in.
+- **P1ReaderEvents.Raw** to get every raw message. Is transmitted as a complete string when the endline is received.
+
+If you start some kind of server, be sure to also implemend the `close()` method.
+
+Every output is wired to the input in the [index.js](index.js) file in the `_startOutputs()` method. Just check how it works.
+
+```JavaScript
+const YourOutput = require('./lib/output/your-output')
+let yourOutput = new YourOutput()
+yourOutput.start(this._reader, { option1: true, options2: false })
+this.outputs.push(yourOutput)
+```
+
+Your output will get an event every 10 seconds, if you only want daily results you will need to build some logic to skip events.
+
+### Run tests before PR
+
+This library enforces [Javascript Standard Style](https://standardjs.com/) on every build. In the [tests](./tests) folder are several tests defined. So we don't break any existing code. Both the javascript styles and the tests can be run with `npm run test` in the main folder.
+
+### DSMR - P1 Sample data
 
 My Keifa meter outputs the following data as you connect to the serial connection. Other meters should be supported as well. Else please start with `--debug` and send one full output to us.
 
@@ -114,7 +145,7 @@ My Keifa meter outputs the following data as you connect to the serial connectio
 !90E4                       // CRC
 ```
 
-### Parsing data
+### Parsing messages explained
 
 The [p1-reader](./lib/p1-reader.js) is responsible for connecting to one of the sources, it is an eventemitter that outputs the following events `line`, `dsmr`, `raw`, `usageChange`. It will send each line to the [p1-parser](./lib/p1-parser.js) for parsing and checking the message. To support extra data, you'll need to take a look at the [p1-map](./lib/p1-map.js) file, it contains the **id** used in the DSMR standard, the name in the result object and a **valueRetriever**. The **valueRetriever** is passed an array of values that where between brackets in the current line.
 

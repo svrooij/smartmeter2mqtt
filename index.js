@@ -30,6 +30,18 @@ class Smartmeter {
       console.warn('Port or socket required')
       process.exit(2)
     }
+    this._startOutputs()
+  }
+
+  async stop () {
+    await Promise.all(this.outputs.map(output => output.close())).catch(err => {
+      console.warn(err)
+    })
+    await this._reader.close()
+    process.exit()
+  }
+
+  _startOutputs () {
     if (config['web-server'] > 0) this._startWebServer(config['web-server'])
     if (config['tcp-server'] > 0) {
       this._reader.startParsing(true)
@@ -70,14 +82,6 @@ class Smartmeter {
     let debugOutput = new DebugOutput()
     debugOutput.start(this._reader)
     this.outputs.push(debugOutput)
-  }
-
-  async stop () {
-    await Promise.all(this.outputs.map(output => output.close())).catch(err => {
-      console.warn(err)
-    })
-    await this._reader.close()
-    process.exit()
   }
 }
 
