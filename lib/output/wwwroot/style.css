@@ -1,6 +1,14 @@
-table {
-  min-width: 350px;
-}
 .status {
   color: orangered;
+}
+
+nav .brand-logo {
+  padding: 0 0 0 15px;
+}
+
+h3 {
+  margin:0 0 8px 0;
+}
+.switch {
+  margin: 0 0 10px 0;
 }

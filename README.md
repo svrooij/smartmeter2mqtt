@@ -28,37 +28,6 @@ Supporting other services like some website where you can monitor historic data 
 
 This app isn't build as a docker container in the registry just yet. PR's are welcome!
 
-## Inputs
-
-This application supports two inputs, you'll need either one.
-
-For a **direct connection** you'll need a Smartmeter cable like [this one at sossolutions](https://www.sossolutions.nl/slimme-meter-kabel?referal=svrooij), and connect it to a free usb port on the device reading the meter.
-
-You can also connect to a **TCP socket**, this way you don't need the device running this program to be on a device near your meter. You can also check out this [ESP8266 P1 reader](http://www.esp8266thingies.nl/wp/), it creates a TCP socket for your meter.
-
-## Outputs
-
-This application supports multiple (concurrent) outputs. Enable at least one!
-
-### Output -> Webserver
-
-You can enable the webserver. This will enable you to see a simple webpage with the latest data from your smartmeter (PR with styling appreciated!). It will also enable an endpoint that responds with json with all the available data. Start this output with `--web-server [port]`, and the webpage will be available on `http://[ip-of-server]:[port]/` and the json endpoint will be avaiable on `http://[ip-of-server]:[port]/api/reading`.
-
-This webpage uses WebSockets for automatic server side data refresh. So the browser will show the latest data as it comes in. If your browser doesn't support websockets it should fallback on ajax loading.
-
-### Output -> JSON tcp socket
-
-This output creates a tcp socket where you will receive a newline delimeted json stream, to be used in your other applications.
-Start it with the `--tcp-server [portnumer]` parameter. You can then see immediate result when you connect too it with for instance telnet `telnet [ip-of-server] [specified-port]`. Maximum 3 connections.
-
-### Output -> Raw tcp socket
-
-This output creates a tcp socket where you'll receive the raw data as it comes in. This is usefull if you want to debug the data coming in and don't want to restart your smartmeter2mqtt application all the time. This can in turn be used as an TCP socket input. Start it with `--raw-tcp-server [port]`. Maximum 3 connections.
-
-Conect to it with `telnet [ip-of-server] [specified-port]` and see the data coming in on your windows machine.
-
-This socket can also be used in domoticz as **P1-Wifi Gateway**.
-
 ## Usage
 
 ```bash
@@ -81,6 +50,39 @@ Options:
   --version         Show version number                                [boolean]
   -h, --help        Show help                                          [boolean]
 ```
+
+## Inputs
+
+This application supports two inputs, you'll need either one.
+
+For a **direct connection** you'll need a Smartmeter cable like [this one at sossolutions](https://www.sossolutions.nl/slimme-meter-kabel?referal=svrooij), and connect it to a free usb port on the device reading the meter.
+
+You can also connect to a **TCP socket**, this way you don't need the device running this program to be on a device near your meter. You can also check out this [ESP8266 P1 reader](http://www.esp8266thingies.nl/wp/), it creates a TCP socket for your meter.
+
+## Outputs
+
+This application supports multiple (concurrent) outputs. Enable at least one!
+
+### Output -> Webserver
+
+You can enable the webserver. This will enable you to see a simple webpage with the latest data from your smartmeter (PR with styling appreciated!). It will also enable an endpoint that responds with json with all the available data. Start this output with `--web-server [port]`, and the webpage will be available on `http://[ip-of-server]:[port]/` and the json endpoint will be avaiable on `http://[ip-of-server]:[port]/api/reading`.
+
+This webpage uses WebSockets for automatic server side data refresh. So the browser will show the latest data as it comes in. If your browser doesn't support websockets it should fallback on ajax loading.
+
+![Screenshot of web interface](./screenshots/screenshot_web.png "Web interface demo")
+
+### Output -> JSON tcp socket
+
+This output creates a tcp socket where you will receive a newline delimeted json stream, to be used in your other applications.
+Start it with the `--tcp-server [portnumer]` parameter. You can then see immediate result when you connect too it with for instance telnet `telnet [ip-of-server] [specified-port]`. Maximum 3 connections.
+
+### Output -> Raw tcp socket
+
+This output creates a tcp socket where you'll receive the raw data as it comes in. This is usefull if you want to debug the data coming in and don't want to restart your smartmeter2mqtt application all the time. This can in turn be used as an TCP socket input. Start it with `--raw-tcp-server [port]`. Maximum 3 connections.
+
+Conect to it with `telnet [ip-of-server] [specified-port]` and see the data coming in on your windows machine.
+
+This socket can also be used in domoticz as **P1-Wifi Gateway**.
 
 ## Developer section
 

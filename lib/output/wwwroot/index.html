@@ -1,34 +1,91 @@
 <html>
   <head>
-    <title>Smartmeter 2 mqtt - monitor</title>
+    <title>Smartmeter by @svrooij</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--Import materialize.css-->
+    <link type="text/css" rel="stylesheet" href="lib/materialize/css/materialize.min.css"  media="screen,projection"/>
     <link rel="stylesheet" type="text/css" href="style.css">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-title" content="Smartmeter">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Smartmeter">
+    
+
   </head>
   <body onload="loadData()">
-    <h1>Smartmeter 2 mqtt <small class="status"></small></h1>
-    <p>This page will show you your current smartmeter data</p>
-    <h3>Current usage <b><span class="calcUsage"></span> watt</b></h3>
-    <table>
-      <tr><td>Current usage/delivery</td><td><span class="calcUsage"></span> watt</td></tr>
-      <tr><td>Current usage</td><td><span class="currentUsage"></span> kw</td></tr>
-      <tr><td>Current delivery</td><td><span class="currentDelivery"></span> kw</td></tr>
-      <tr><td>Last update</td><td class="powerTs"></td></tr>
-    </table>
-
-    <h3 class="powerLabel">Electricity</h3>
-    <table>
-      <tr><td>Total T1 Usage</td><td><span class="totalT1Usage"></span> kwh</td></tr>
-      <tr><td>Total T2 Usage</td><td><span class="totalT2Usage"></span> kwh</td></tr>
-      <tr><td>Total T1 Delivered</td><td><span class="totalT1Delivered"></span> kwh</td></tr>
-      <tr><td>Total T2 Delivered</td><td><span class="totalT2Delivered"></span> kwh</td></tr>
-    </table>
-    <h3 class="gasLabel">Gas</h3>
-    <table>
-      <tr><td>Total gas usage</td><td><span class="totalGas"></span> m3</td></tr>
-      <tr><td>Last update</td><td class="gasTs"></td></tr>
-    </table>
-    <a href="/api/reading">Show data</a>
-    <p><a href="https://github.com/svrooij/smartmeter2mqtt">View on github</a></p>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" async></script>
+    <nav>
+      <div class="nav-wrapper blue darken-4">
+        <a href="#!" class="brand-logo">Smartmeter</a>
+        <a href="#" data-target="mobile-demo" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+        <ul class="right hide-on-med-and-down">
+          <li><a href="https://github.com/svrooij/smartmeter2mqtt">Github</a></li>
+          <li><a href="/api/reading">Show data</a></li>
+        </ul>
+      </div>
+    </nav>
+  
+    <ul class="sidenav" id="mobile-demo">
+      <li><a href="https://github.com/svrooij/smartmeter2mqtt">Github</a></li>
+      <li><a href="/api/reading">Show data</a></li>
+    </ul>
+    <div class="container">
+      <div class="row">
+        <div class="col s12 m6">
+          <div class="card">
+            <div class="card-image delivery">
+              <img src="img/solar-panel.jpg">
+              <span class="card-title">Delivering electricity</span>
+            </div>
+            <div class="card-image usage">
+                <img src="img/power-plant.jpg">
+                <span class="card-title">Using electricity</span>
+              </div>
+            <div class="card-content center-align">
+              <h3><i class="material-icons delivery">wb_sunny</i> <i class="material-icons usage">power</i> <span class="calcUsage"></span> watt</h3>
+              <div class="switch">
+                  <label>
+                    Tarrif 1
+                    <input type="checkbox" id="tarrifCheckbox">
+                    <span class="lever"></span>
+                    Tarrif 2
+                  </label>
+                </div>
+              <small><span class="powerTs"></span></small>
+            </div>
+          </div>
+        </div>
+        <div class="col s12 m6">
+          <div class="card">
+            <div class="card-content">
+                <span class="card-title"><i class="material-icons">power</i> Power</span>
+              <table>
+                <thead><tr><th>Tarrif</th><th>Used / Delivered</th></tr></thead>
+                <tbody>
+                  <tr><td>Tarrif 1</td><td><span class="totalT1Usage"></span> kwh / <span class="totalT1Delivered"></span> kwh</td></tr>
+                  <tr><td>Tarrif 2</td><td><span class="totalT2Usage"></span> kwh / <span class="totalT2Delivered"></span> kwh</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="col s12 m6">
+            <div class="card">
+              <div class="card-content">
+                <span class="card-title"><i class="material-icons">filter_drama</i> Gas</span>
+                <p><b><span class="totalGas"></span> m3</b><br/><small class="gasTs"></small></p>
+              </div>
+            </div>
+          </div>
+      </div>
+  </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="loader.js"></script>
+    <script type="text/javascript" src="lib/materialize/js/materialize.min.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function(){
+    $('.sidenav').sidenav()
+  })
+    </script>
   </body>
 </html>
