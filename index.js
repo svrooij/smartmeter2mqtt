@@ -51,6 +51,8 @@ class Smartmeter {
 
     if (config.debug) this.debug()
 
+    if (config['post-url']) this._startHttp({ url: config['post-url'], interval: config['post-interval'] })
+
     if (this.outputs.length === 0) {
       console.warn('No outputs enabled, you should enable at least one.')
       process.exit(5)
@@ -72,6 +74,15 @@ class Smartmeter {
     let webserver = new WebServer()
     webserver.start(this._reader, { port: port })
     this.outputs.push(webserver)
+  }
+
+  _startHttp (options = {}) {
+    this._reader.startParsing(true)
+    console.log('- Output: Post data to %s every %d sec.', options.url, options.interval)
+    const HttpOutput = require('./lib/output/http-output')
+    let httpOutput = new HttpOutput()
+    httpOutput.start(this._reader, options)
+    this.outputs.push(httpOutput)
   }
 
   debug () {
