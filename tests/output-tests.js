@@ -8,8 +8,8 @@ const EventEmitter = require('events')
 
 describe('DebugOutput', function () {
   it('Should subscribe to several events', function () {
-    let fakeReader = new EventEmitter()
-    let debugOutput = new DebugOutput()
+    const fakeReader = new EventEmitter()
+    const debugOutput = new DebugOutput()
     debugOutput.start(fakeReader)
     assert.strictEqual(fakeReader.listenerCount(P1ReaderEvents.ParsedResult), 1, 'Debug output not subscribed to ParsedResult event')
     assert.strictEqual(fakeReader.listenerCount(P1ReaderEvents.ParsedResult), 1, 'Debug output not subscribed to ParsedResult event')
@@ -20,14 +20,14 @@ describe('DebugOutput', function () {
 
 describe('TcpServer', function () {
   it('Should subscribe to Parsed result event', function () {
-    let fakeReader = new EventEmitter()
-    let tcpServer = new TcpServer()
+    const fakeReader = new EventEmitter()
+    const tcpServer = new TcpServer()
     tcpServer.start(fakeReader, { startServer: false })
     assert.strictEqual(fakeReader.listenerCount(P1ReaderEvents.ParsedResult), 1, 'TCP server not subscribed to ParsedResult event')
   })
   it('Should subscribe to Line event for rawSocket: true', function () {
-    let fakeReader = new EventEmitter()
-    let tcpServer = new TcpServer()
+    const fakeReader = new EventEmitter()
+    const tcpServer = new TcpServer()
     tcpServer.start(fakeReader, { rawSocket: true, port: 3001, startServer: false })
     assert.strictEqual(fakeReader.listenerCount(P1ReaderEvents.Line), 1, 'Raw TCP server not subscribed to ParsedResult event')
   })
@@ -35,8 +35,8 @@ describe('TcpServer', function () {
 
 describe('WebServer', function () {
   it('Should subscribe to Parsed result event', function () {
-    let fakeReader = new EventEmitter()
-    let webServer = new WebServer()
+    const fakeReader = new EventEmitter()
+    const webServer = new WebServer()
     webServer.start(fakeReader, { startServer: false })
     assert.strictEqual(fakeReader.listenerCount(P1ReaderEvents.ParsedResult), 1, 'WebServer not subscribed to ParsedResult event')
   })

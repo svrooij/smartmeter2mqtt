@@ -15,16 +15,16 @@ class Smartmeter {
   }
 
   start () {
-    if (config['port'] && config['port'].length > 0) {
+    if (config.port && config.port.length > 0) {
       console.log('- Read serial port %s', config.port)
       this._reader.startWithSerialPort(config.port)
-    } else if (config['socket'] && config['socket'].length > 0) {
-      const parts = config['socket'].toString().split(':')
+    } else if (config.socket && config.socket.length > 0) {
+      const parts = config.socket.toString().split(':')
       if (parts.length !== 2) {
         console.warn('Socket incorrect format \'host:port\'')
         process.exit(3)
       }
-      console.log('- Read from socket %s', config['socket'])
+      console.log('- Read from socket %s', config.socket)
       this._reader.startWithSocket(parts[0], parseInt(parts[1]))
     } else {
       console.warn('Port or socket required')
@@ -62,7 +62,7 @@ class Smartmeter {
   _startTcpServer (port, raw = false) {
     console.log(`- Output: ${raw ? 'Raw' : 'JSON'} TCP socket on port ${port}`)
     const TcpServer = require('./lib/output/tcp-server')
-    let tcpServer = new TcpServer()
+    const tcpServer = new TcpServer()
     tcpServer.start(this._reader, { port, rawSocket: raw === true })
     this.outputs.push(tcpServer)
   }
@@ -71,7 +71,7 @@ class Smartmeter {
     this._reader.startParsing(true)
     console.log('- Output: Webserver on port %d', port)
     const WebServer = require('./lib/output/web-server')
-    let webserver = new WebServer()
+    const webserver = new WebServer()
     webserver.start(this._reader, { port: port })
     this.outputs.push(webserver)
   }
@@ -80,7 +80,7 @@ class Smartmeter {
     this._reader.startParsing(true)
     console.log('- Output: Post data to %s every %d sec.', options.url, options.interval)
     const HttpOutput = require('./lib/output/http-output')
-    let httpOutput = new HttpOutput()
+    const httpOutput = new HttpOutput()
     httpOutput.start(this._reader, options)
     this.outputs.push(httpOutput)
   }
@@ -90,7 +90,7 @@ class Smartmeter {
     this._reader.startParsing(true)
 
     const DebugOutput = require('./lib/output/debug-output')
-    let debugOutput = new DebugOutput()
+    const debugOutput = new DebugOutput()
     debugOutput.start(this._reader)
     this.outputs.push(debugOutput)
   }
