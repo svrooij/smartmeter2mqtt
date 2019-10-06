@@ -47,11 +47,14 @@ class Smartmeter {
       this._reader.startParsing(true)
       this._startTcpServer(config['tcp-server'])
     }
+
+    if (config['mqtt-url']) this._startMqtt({ url: config['mqtt-url'], topic: config['mqtt-topic'], publishDistinct: config['mqtt-distinct'] === true })
+
+    if (config['post-url']) this._startHttp({ url: config['post-url'], interval: config['post-interval'], postJson: config['post-json'] === true })
+
     if (config['raw-tcp-server'] > 0) this._startTcpServer(config['raw-tcp-server'], true)
 
     if (config.debug) this.debug()
-
-    if (config['post-url']) this._startHttp({ url: config['post-url'], interval: config['post-interval'], postJson: config['post-json'] === true })
 
     if (this.outputs.length === 0) {
       console.warn('No outputs enabled, you should enable at least one.')
@@ -83,6 +86,15 @@ class Smartmeter {
     const httpOutput = new HttpOutput()
     httpOutput.start(this._reader, options)
     this.outputs.push(httpOutput)
+  }
+
+  _startMqtt (options = {}) {
+    this._reader.startParsing(true)
+    console.log('- Output: Mqtt to %s', options.url)
+    const MqttOutput = require('./lib/output/mqtt-output')
+    const mqttOutput = new MqttOutput()
+    mqttOutput.start(this._reader, options)
+    this.outputs.push(mqttOutput)
   }
 
   debug () {

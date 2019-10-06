@@ -13,7 +13,7 @@ This application can listen to your (Dutch) Smartmeter with a P1 connector, and 
 - [x] Website with websockets (and ajax fallback) for client side refresh
 - [x] Http json endpoint to get the latest reading
 - [x] Webrequest to external service
-- [ ] MQTT
+- [x] MQTT
 
 Supporting other services like some website where you can monitor historic data is also possible. [Building your own output](#support-for-output-x) is explained a bit lower on this page.
 
@@ -50,6 +50,10 @@ Options:
   --post-url        Post the results to this url
   --post-interval   Seconds between posts                [number] [default: 300]
   --post-json       Post the data as json instead of form parameters   [boolean]
+  --mqtt-url        Send the data to this mqtt server
+  --mqtt-topic      Use this topic prefix for all messages
+                                                         [default: "smartmeter"]
+  --mqtt-distinct   Publish data distinct to mqtt                      [boolean]
   --tcp-server      Expose JSON TCP socket on this port                 [number]
   --raw-tcp-server  Expose RAW TCP socket on this port                  [number]
   --debug           Enable debug output                                [boolean]
@@ -100,6 +104,10 @@ This output will posts the new data to an URL, at an interval (to prevent overlo
 You can also configure the interval with `--post-interval 300` (to set it to 300 seconds).
 
 By default the data is posted as form variables, if you want you can have it post as json by specifing `--post-json`.
+
+### Output -> MQTT
+
+This will output the data to the specified mqtt server. You'll need to submit the mqtt url with `--mqtt-url mqtt://[host]:[port]` like `--mqtt-url mqtt://localhost:1883`.
 
 ## Developer section
 

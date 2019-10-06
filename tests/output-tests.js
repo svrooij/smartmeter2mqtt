@@ -51,3 +51,13 @@ describe('HttpOutput', function () {
     httpOutput.close()
   })
 })
+
+describe('MqttOutput', function () {
+  it('Should subscribe to Parsed result event', function () {
+    const fakeReader = new EventEmitter()
+    const httpOutput = new HttpOutput()
+    httpOutput.start(fakeReader)
+    assert.strictEqual(fakeReader.listenerCount(P1ReaderEvents.ParsedResult), 1, 'HttpOutput not subscribed to ParsedResult event')
+    httpOutput.close()
+  })
+})
