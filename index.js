@@ -51,7 +51,7 @@ class Smartmeter {
 
     if (config.debug) this.debug()
 
-    if (config['post-url']) this._startHttp({ url: config['post-url'], interval: config['post-interval'] })
+    if (config['post-url']) this._startHttp({ url: config['post-url'], interval: config['post-interval'], postJson: config['post-json'] === true })
 
     if (this.outputs.length === 0) {
       console.warn('No outputs enabled, you should enable at least one.')
