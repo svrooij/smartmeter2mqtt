@@ -3,6 +3,7 @@
 [![npm](https://img.shields.io/npm/v/smartmeter2mqtt.svg?style=flat-square)](https://www.npmjs.com/package/smartmeter2mqtt)
 [![travis](https://img.shields.io/travis/svrooij/smartmeter2mqtt.svg?style=flat-square)](https://travis-ci.org/svrooij/smartmeter2mqtt)
 [![mqtt-smarthome](https://img.shields.io/badge/mqtt-smarthome-blue.svg?style=flat-square)](https://github.com/mqtt-smarthome/mqtt-smarthome)
+[![Support me on Github][badge_sponsor]][link_sponsor]
 [![PayPal][badge_paypal_donate]][paypal-donations]
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg?style=flat-square)](https://github.com/semantic-release/semantic-release)
 
@@ -179,6 +180,6 @@ The [p1-reader](./lib/p1-reader.js) is responsible for connecting to one of the 
 Supporting other data fields is just a matter of changing the **p1-map** file.
 
 [badge_paypal_donate]: https://svrooij.nl/badges/paypal_donate.svg
-[badge_patreon]: https://svrooij.nl/badges/patreon.svg
 [paypal-donations]: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=T9XFJYUSPE4SG
-[patreon]: https://www.patreon.com/svrooij
+[badge_sponsor]: https://img.shields.io/badge/Sponsor-on%20Github-red
+[link_sponsor]: https://github.com/sponsors/svrooij
