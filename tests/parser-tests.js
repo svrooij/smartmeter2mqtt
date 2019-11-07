@@ -12,7 +12,7 @@ describe('P1Parser', function () {
   })
 
   it('Should parse partial message', function () {
-    let parser = new P1Parser()
+    const parser = new P1Parser()
     assert.strictEqual(parser.addLine('/KFM5KAIFA-METER'), false, 'Add Header should not return true')
     assert.strictEqual(parser.addLine('0-0:1.0.0(190514213620S)'), false, 'Add TS should not return true')
     assert.strictEqual(parser.addLine('0-0:96.1.1(453xxxxxxxxxx)'), false, 'Add sn line should not return true')
@@ -23,7 +23,7 @@ describe('P1Parser', function () {
   })
 
   it('Should check crc', function () {
-    let parser = new P1Parser(true)
+    const parser = new P1Parser(true)
     const text = fs.readFileSync('./p1-message.txt')
     const lines = text.toString().split('\n')
     lines.forEach((line) => {

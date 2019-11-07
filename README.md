@@ -3,6 +3,7 @@
 [![npm](https://img.shields.io/npm/v/smartmeter2mqtt.svg?style=flat-square)](https://www.npmjs.com/package/smartmeter2mqtt)
 [![travis](https://img.shields.io/travis/svrooij/smartmeter2mqtt.svg?style=flat-square)](https://travis-ci.org/svrooij/smartmeter2mqtt)
 [![mqtt-smarthome](https://img.shields.io/badge/mqtt-smarthome-blue.svg?style=flat-square)](https://github.com/mqtt-smarthome/mqtt-smarthome)
+[![Support me on Github][badge_sponsor]][link_sponsor]
 [![PayPal][badge_paypal_donate]][paypal-donations]
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg?style=flat-square)](https://github.com/semantic-release/semantic-release)
 
@@ -12,7 +13,8 @@ This application can listen to your (Dutch) Smartmeter with a P1 connector, and 
 - [x] Raw TCP socket
 - [x] Website with websockets (and ajax fallback) for client side refresh
 - [x] Http json endpoint to get the latest reading
-- [ ] MQTT
+- [x] Webrequest to external service
+- [x] MQTT
 
 Supporting other services like some website where you can monitor historic data is also possible. [Building your own output](#support-for-output-x) is explained a bit lower on this page.
 
@@ -41,14 +43,26 @@ Read from tcp socket:
 smartmeter2mqtt --socket host:port [options]
 
 Options:
-  --port            The serial port to read, P1 to serial usb, eg. '/dev/ttyUSB0'
-  --socket          The tcp socket to read, if reading from serial to network device, eg. '192.168.0.3:3000'
+  --port            The serial port to read, P1 to serial usb, eg.
+                    '/dev/ttyUSB0'
+  --socket          The tcp socket to read, if reading from serial to network
+                    device, as host:port, like '192.168.0.3:3000'
   --web-server      Expose webserver on this port                       [number]
+  --post-url        Post the results to this url
+  --post-interval   Seconds between posts                [number] [default: 300]
+  --post-json       Post the data as json instead of form parameters   [boolean]
+  --mqtt-url        Send the data to this mqtt server
+  --mqtt-topic      Use this topic prefix for all messages
+                                                         [default: "smartmeter"]
+  --mqtt-distinct   Publish data distinct to mqtt                      [boolean]
   --tcp-server      Expose JSON TCP socket on this port                 [number]
   --raw-tcp-server  Expose RAW TCP socket on this port                  [number]
   --debug           Enable debug output                                [boolean]
   --version         Show version number                                [boolean]
   -h, --help        Show help                                          [boolean]
+
+All options can also be specified as Environment valiables
+Prefix them with 'SMARTMETER_' and make them all uppercase
 ```
 
 ## Inputs
@@ -83,6 +97,18 @@ This output creates a tcp socket where you'll receive the raw data as it comes i
 Conect to it with `telnet [ip-of-server] [specified-port]` and see the data coming in on your windows machine.
 
 This socket can also be used in domoticz as **P1-Wifi Gateway**.
+
+### Output -> Webrequest
+
+This output will posts the new data to an URL, at an interval (to prevent overloading of remote). You can provide the url to post to with `--post-url [url]`.
+
+You can also configure the interval with `--post-interval 300` (to set it to 300 seconds).
+
+By default the data is posted as form variables, if you want you can have it post as json by specifing `--post-json`.
+
+### Output -> MQTT
+
+This will output the data to the specified mqtt server. You'll need to submit the mqtt url with `--mqtt-url mqtt://[host]:[port]` like `--mqtt-url mqtt://localhost:1883`.
 
 ## Developer section
 
@@ -154,6 +180,6 @@ The [p1-reader](./lib/p1-reader.js) is responsible for connecting to one of the 
 Supporting other data fields is just a matter of changing the **p1-map** file.
 
 [badge_paypal_donate]: https://svrooij.nl/badges/paypal_donate.svg
-[badge_patreon]: https://svrooij.nl/badges/patreon.svg
 [paypal-donations]: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=T9XFJYUSPE4SG
-[patreon]: https://www.patreon.com/svrooij
+[badge_sponsor]: https://img.shields.io/badge/Sponsor-on%20Github-red
+[link_sponsor]: https://github.com/sponsors/svrooij
