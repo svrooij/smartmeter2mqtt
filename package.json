@@ -28,26 +28,26 @@
   },
   "homepage": "https://github.com/svrooij/smartmeter2mqtt#readme",
   "dependencies": {
-    "@serialport/parser-readline": "^2.0.2",
+    "@serialport/parser-readline": "^8.0.6",
     "crc": "^3.8.0",
     "express": "^4.17.1",
     "mqtt": "^3.0.0",
     "node-fetch": "^2.6.0",
-    "serialport": "^7.1.5",
-    "ws": "^7.1.2",
-    "yargs": "^14.0.0"
+    "serialport": "^8.0.7",
+    "ws": "^7.2.3",
+    "yargs": "^15.3.1"
   },
   "devDependencies": {
     "assert": "^2.0.0",
-    "eslint": "^6.5.1",
-    "eslint-config-standard": "^14.1.0",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-node": "^10.0.0",
+    "eslint": "^6.8.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
     "mocha": "^6.2.1",
-    "standard": "^14.3.1",
-    "semantic-release": "^15.13.24"
+    "standard": "^14.3.3",
+    "semantic-release": "^17.0.4"
   },
   "bin": {
     "smartmeter2mqtt": "./index.js"

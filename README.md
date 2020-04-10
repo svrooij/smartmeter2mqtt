@@ -20,15 +20,63 @@ Supporting other services like some website where you can monitor historic data 
 
 ## Getting started
 
-1. Install the application `npm install smartmeter2mqtt -g --production`
-2. Connect smartmeter
+1. Connect smartmeter
+2. Choose the run method [docker](#running-in-docker) or [bare](#running-locally)
 3. Start the application (for testing)
-4. Run in background using [PM2](https://pm2.io/doc/en/runtime/overview/) or run in docker container
+4. Run in background using docker container or [PM2](https://pm2.io/doc/en/runtime/overview/)
 5. Send out a tweet that you are using smartmeter2mqtt on [twitter @svrooij](https://twitter.com/svrooij)
 
 ### Running in docker
 
-This app isn't build as a docker container in the registry just yet. PR's are welcome!
+My setup is a Raspberry Pi 3 model b rev 1.2 (See `cat /proc/cpuinfo`) with a [P1 cable](#p1-cable) running [Hypriot](https://blog.hypriot.com/downloads/) as an OS (because of the pre-configured docker/docker-compose).
+
+The [docker image](https://hub.docker.com/r/svrooij/smartmeter) is currently automaticly build from every new release. We support the following platforms (can be extended if we have someone willing to test it out):
+
+- AMD64 `linux/amd64`
+- ARM v6 (raspberry pi ?) `linux/arm/v6`
+- ARM v7 (raspberry pi 3/3b) `linux/arm/v7`
+- ARM64 (raspberry pi 4 running in 64 bit) `linux/arm64`
+
+#### Find device ID
+
+If you're reading from an USB to P1 cable, it's important that you connect the device to the container.
+The mapped location might change on reboot or if you connect other devices. That is why I recommend to connect the device by serial.
+You will need the real device location, type `ls /dev/serial/by-id` and not the device string that looks like `usb-FTDI_FT232R_USB_UART_A13LN4ZS-if00-port0` for my [cable](#p1-cable).
+
+Be sure to replace this serial in the docker compose file.
+
+#### Docker compose
+
+```yaml
+version: "3.7"
+
+services:
+  smartmeter:
+    image: svrooij/smartmeter:alpha
+    devices: # Replace the device id with your found id, the device is mapped as /dev/ttyUSB0 inside the container.
+      - /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A13LN4ZS-if00-port0:/dev/ttyUSB0
+    restart: unless-stopped
+    ports: # Depending on your situation you'll need to expose some ports
+      - 3000:3000
+      - 3010:3010
+      - 3020:3020
+    environment:
+      - TZ=Europe/Amsterdam
+      - SMARTMETER_PORT=/dev/ttyUSB0
+      - SMARTMETER_web-server=3000
+      - SMARTMETER_tcp-server=3010
+      - SMARTMETER_raw-tcp-server=3020
+
+```
+
+You can set every setting with an environment variable prefixed with `SMARTMETER_`, choose the settings you need.
+
+### Running locally
+
+1. Install `npm i -g smartmerter2mqtt --production`
+2. Figure out what source you want to connect, see below.
+3. Start application to see if it works
+4. Configure to run in background [see stackoverflow answer](https://stackoverflow.com/a/29042953/639153).
 
 ## Usage
 
@@ -69,7 +117,11 @@ Prefix them with 'SMARTMETER_' and make them all uppercase
 
 This application supports two inputs, you'll need either one.
 
-For a **direct connection** you'll need a Smartmeter cable like [this one at sossolutions](https://www.sossolutions.nl/slimme-meter-kabel?referal=svrooij), and connect it to a free usb port on the device reading the meter.
+### P1 cable
+
+For a **direct connection** you'll need a Smartmeter cable like [this one at sossolutions](https://www.sossolutions.nl/slimme-meter-kabel?referal=svrooij), and connect it to a free usb port on the device reading the meter. I've been using this cable for years without any problems.
+
+### TCP socket
 
 You can also connect to a **TCP socket**, this way you don't need the device running this program to be on a device near your meter. You can also check out this [ESP8266 P1 reader](http://www.esp8266thingies.nl/wp/), it creates a TCP socket for your meter.
 
@@ -90,6 +142,15 @@ This webpage uses WebSockets for automatic server side data refresh. So the brow
 This output creates a tcp socket where you will receive a newline delimeted json stream, to be used in your other applications.
 Start it with the `--tcp-server [portnumer]` parameter. You can then see immediate result when you connect too it with for instance telnet `telnet [ip-of-server] [specified-port]`. Maximum 3 connections.
 
+```plain
+> telnet 192.168.1.20 3010
+Trying 192.168.1.20...
+Connected to black-pearl.localdomain.
+Escape character is '^]'.
+{"header":"KFM5KAIFA-METER","p1Version":"42","powerTs":"2020-04-10T10:20:23","powerSn":"45303032xxx","totalT1Use":3000.497,"totalT2Use":1000.243,"totalT1Delivered":1000.458,"totalT2Delivered":3000.394,"currentTarrif":2,"currentUsage":0.049,"currentL1":2,"currentUsageL1":0.049,"deviceType":"003","gasSn":"4730303xxx","gas":{"ts":"2020-04-10T10:00:00","totalUse":2000.671},"crc":true,"calculatedUsage":49}
+{"header":"KFM5KAIFA-METER","p1Version":"42","powerTs":"2020-04-10T10:20:33","powerSn":"45303032xxx","totalT1Use":3000.497,"totalT2Use":1000.243,"totalT1Delivered":1000.458,"totalT2Delivered":3000.394,"currentTarrif":2,"currentUsage":0.048,"currentL1":2,"currentUsageL1":0.048,"deviceType":"003","gasSn":"4730303xxx","gas":{"ts":"2020-04-10T10:00:00","totalUse":2000.671},"crc":true,"calculatedUsage":48}
+```
+
 ### Output -> Raw tcp socket
 
 This output creates a tcp socket where you'll receive the raw data as it comes in. This is usefull if you want to debug the data coming in and don't want to restart your smartmeter2mqtt application all the time. This can in turn be used as an TCP socket input. Start it with `--raw-tcp-server [port]`. Maximum 3 connections.
@@ -97,6 +158,39 @@ This output creates a tcp socket where you'll receive the raw data as it comes i
 Conect to it with `telnet [ip-of-server] [specified-port]` and see the data coming in on your windows machine.
 
 This socket can also be used in domoticz as **P1-Wifi Gateway**.
+
+```plain
+> telnet 192.168.1.20 3020
+Trying 192.168.1.20...
+Connected to black-pearl.localdomain.
+Escape character is '^]'.
+/KFM5KAIFA-METER
+
+1-3:0.2.8(42)
+0-0:1.0.0(200410102433S)
+0-0:96.1.1(4530xxx)
+1-0:1.8.1(003000.497*kWh)
+1-0:1.8.2(001000.248*kWh)
+1-0:2.8.1(001000.458*kWh)
+1-0:2.8.2(003000.394*kWh)
+0-0:96.14.0(0002)
+1-0:1.7.0(00.105*kW)
+1-0:2.7.0(00.000*kW)
+0-0:96.7.21(00000)
+0-0:96.7.9(00000)
+1-0:99.97.0(1)(0-0:96.7.19)(000101000001W)(2147483647*s)
+1-0:32.32.0(00000)
+1-0:32.36.0(00000)
+0-0:96.13.1()
+0-0:96.13.0()
+1-0:31.7.0(001*A)
+1-0:21.7.0(00.105*kW)
+1-0:22.7.0(00.000*kW)
+0-2:24.1.0(003)
+0-2:96.1.0(4730xxx)
+0-2:24.2.1(200410100000S)(02000.671*m3)
+!5305
+```
 
 ### Output -> Webrequest
 
@@ -139,6 +233,19 @@ Your output will get an event every 10 seconds, if you only want daily results y
 ### Run tests before PR
 
 This library enforces [Javascript Standard Style](https://standardjs.com/) on every build. In the [tests](./tests) folder are several tests defined. So we don't break any existing code. Both the javascript styles and the tests can be run with `npm run test` in the main folder.
+
+### Build docker image
+
+The Dockerfile is setup to support multi-architectures builds. You can build this image on you regular 64 bit computer for these platforms. `arm` / `arm64` / `amd64` by using the following command:
+
+```bash
+# For pushing to docker hub
+docker buildx build -t svrooij/smartmeter:alpha --platform linux/amd64,linux/arm/v7,linux/arm64 --push .
+# For loading it to your local machine
+docker buildx build -t svrooij/smartmeter:alpha --platform linux/amd64,linux/arm/v7,linux/arm64 --load .
+# Regular build (no buildx installed)
+docker build -t svrooij/smartmeter:alpha .
+```
 
 ### DSMR - P1 Sample data
 
