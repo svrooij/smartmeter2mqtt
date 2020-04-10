@@ -30,7 +30,7 @@ Supporting other services like some website where you can monitor historic data 
 
 My setup is a Raspberry Pi 3 model b rev 1.2 (See `cat /proc/cpuinfo`) with a [P1 cable](#p1-cable) running [Hypriot](https://blog.hypriot.com/downloads/) as an OS (because of the pre-configured docker/docker-compose).
 
-The [docker image](https://hub.docker.com/r/svrooij/smartmeter) is currently automaticly build from every new release. We support the following platforms (can be extended if we have someone willing to test it out):
+The [docker image](https://hub.docker.com/r/svrooij/smartmeter) is currently automatically build from every new release. We support the following platforms (can be extended if we have someone willing to test it out):
 
 - AMD64 `linux/amd64`
 - ARM v6 (raspberry pi ?) `linux/arm/v6`
@@ -73,7 +73,7 @@ You can set every setting with an environment variable prefixed with `SMARTMETER
 
 ### Running locally
 
-1. Install `npm i -g smartmerter2mqtt --production`
+1. Install `npm i -g smartmeter2mqtt --production`
 2. Figure out what source you want to connect, see below.
 3. Start application to see if it works
 4. Configure to run in background [see stackoverflow answer](https://stackoverflow.com/a/29042953/639153).
