@@ -48,7 +48,15 @@ class Smartmeter {
       this._startTcpServer(config['tcp-server'])
     }
 
-    if (config['mqtt-url']) this._startMqtt({ url: config['mqtt-url'], topic: config['mqtt-topic'], publishDistinct: config['mqtt-distinct'] === true })
+    if (config['mqtt-url']) {
+      this._startMqtt({
+        url: config['mqtt-url'],
+        topic: config['mqtt-topic'],
+        discovery: config['mqtt-discovery'] === true,
+        discoveryPrefix: config['mqtt-discovery-prefix'],
+        publishDistinct: config['mqtt-distinct'] === true
+      })
+    }
 
     if (config['post-url']) this._startHttp({ url: config['post-url'], interval: config['post-interval'], postJson: config['post-json'] === true })
 
