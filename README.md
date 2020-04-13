@@ -7,14 +7,14 @@
 [![PayPal][badge_paypal_donate]][paypal-donations]
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg?style=flat-square)](https://github.com/semantic-release/semantic-release)
 
-This application can listen to your (Dutch) Smartmeter with a P1 connector, and send the data to several outputs. I plan to support the following methods:
+This application can listen to your (Dutch) Smartmeter with a P1 connector, and send the data to several outputs. Currently supporting the following methods:
 
-- [x] JSON TCP socket
-- [x] Raw TCP socket
-- [x] Website with websockets (and ajax fallback) for client side refresh
-- [x] Http json endpoint to get the latest reading
-- [x] Webrequest to external service
-- [x] MQTT
+- JSON TCP socket
+- Raw TCP socket
+- Website with websockets (and ajax fallback) for client side refresh
+- Http json endpoint to get the latest reading
+- Webrequest to external service
+- MQTT (with home assistant integration)
 
 Supporting other services like some website where you can monitor historic data is also possible. [Building your own output](#support-for-output-x) is explained a bit lower on this page.
 
@@ -23,7 +23,7 @@ Supporting other services like some website where you can monitor historic data 
 1. Connect smartmeter
 2. Choose the run method [docker](#running-in-docker) or [bare](#running-locally)
 3. Start the application (for testing)
-4. Run in background using docker container or [PM2](https://pm2.io/doc/en/runtime/overview/)
+4. Run in background using docker container or [PM2](https://pm2.keymetrics.io/docs/usage/pm2-doc-single-page/#start-an-app)
 5. Send out a tweet that you are using smartmeter2mqtt on [twitter @svrooij](https://twitter.com/svrooij)
 
 ### Running in docker
@@ -204,13 +204,68 @@ By default the data is posted as form variables, if you want you can have it pos
 
 This will output the data to the specified mqtt server. You'll need to submit the mqtt url with `--mqtt-url mqtt://[host]:[port]` like `--mqtt-url mqtt://localhost:1883`.
 
+#### Mqtt - Topics
+
+Once enabled mqtt, this application will send several messages to your mqtt server. All prefixed with `smartmeter` (configurable with `--mqtt-topic`).
+
+Topic: `smartmeter/status/energy`
+Payload:
+
+```json
+{
+  "header" : "KFM5KAIFA-METER",
+  "p1Version" : "42",
+  "powerTs" : "2020-04-13T18:22:59",
+  "powerSn" : "453030",
+  "totalT1Use" : 3000,
+  "totalT2Use" : 1000,
+  "totalT1Delivered" : 1000,
+  "totalT2Delivered" : 3000,
+  "currentTarrif" : 1,
+  "currentDelivery" : 1.772,
+  "currentL1" : 7,
+  "currentDeliveryL1" : 1.77,
+  "deviceType" : "003",
+  "gasSn" : "47303",
+  "gas" : {
+    "ts" : "2020-04-13T18:00:00",
+    "totalUse" : 2000
+  },
+  "crc" : true,
+  "calculatedUsage" : -1772
+}
+```
+
+Topic: `smartmeter/status/usage`
+Payload:
+
+```json
+{
+  "previousUsage" : -1746,
+  "relative" : -8,
+  "message" : "Usage decreased -8 to -1754",
+  "val" : -1754,
+  "tc" : 1586795117062
+}
+```
+
+#### MQTT - Auto discovery homeassistant
+
+If you're running home assistant, be sure to enable mqtt discovery `--mqtt-discovery` and `--mqtt-discovery-prefix` (defaults to `homeassistant`). This will make sure the following sensors will automattically show up in home assistant:
+
+- **Current usage**: Your current total usage (can be negative when delivering power)
+- **Total used T1**: Total power consumed from the grid in T1
+- **Total used T2**: Total power consumed from the grid in T2
+- **Total delivered T1**: Total power delivered to the grid in T1
+- **Total delivered T2**: Total power delivered to the grid in T2
+
 ## Developer section
 
 This section is for the curious ones.
 
 ### Support for output X
 
-This package comes with several outputs, they all extend [Output](./lib/output/output.js). Every new output should implement the `start(p1Reader, options)` method. They all get the instance of the current [P1Reader](./lib/p1-reader.js). So your new output should subscribe to one of the events. All events are defined in [P1ReaderEvents](./lib/p1-reader-events.js) and you should use the statics from the class, (even though they are just strings).
+This package comes with several outputs, they all extend [Output](https://github.com/svrooij/smartmeter2mqtt/blob/master/lib/output/output.js). Every new output should implement the `start(p1Reader, options)` method. They all get the instance of the current [P1Reader](https://github.com/svrooij/smartmeter2mqtt/blob/master/lib/p1-reader.js). So your new output should subscribe to one of the events. All events are defined in [P1ReaderEvents](https://github.com/svrooij/smartmeter2mqtt/blob/master/lib/p1-reader-events.js) and you should use the statics from the class, (even though they are just strings).
 
 - **P1ReaderEvents.ParsedResult** to get the parsed result (if crc check validates), probably the one you want.
 - **P1ReaderEvents.UsageChange** to get the changes in current usage. Already computed you dont have to.
@@ -219,7 +274,7 @@ This package comes with several outputs, they all extend [Output](./lib/output/o
 
 If you start some kind of server, be sure to also implemend the `close()` method.
 
-Every output is wired to the input in the [index.js](index.js) file in the `_startOutputs()` method. Just check how it works.
+Every output is wired to the input in the [index.js](https://github.com/svrooij/smartmeter2mqtt/blob/master/index.js) file in the `_startOutputs()` method. Just check how it works.
 
 ```JavaScript
 const YourOutput = require('./lib/output/your-output')
@@ -282,7 +337,7 @@ My Keifa meter outputs the following data as you connect to the serial connectio
 
 ### Parsing messages explained
 
-The [p1-reader](./lib/p1-reader.js) is responsible for connecting to one of the sources, it is an eventemitter that outputs the following events `line`, `dsmr`, `raw`, `usageChange`. It will send each line to the [p1-parser](./lib/p1-parser.js) for parsing and checking the message. To support extra data, you'll need to take a look at the [p1-map](./lib/p1-map.js) file, it contains the **id** used in the DSMR standard, the name in the result object and a **valueRetriever**. The **valueRetriever** is passed an array of values that where between brackets in the current line.
+The [p1-reader](https://github.com/svrooij/smartmeter2mqtt/blob/master/lib/p1-reader.js) is responsible for connecting to one of the sources, it is an eventemitter that outputs the following events `line`, `dsmr`, `raw`, `usageChange`. It will send each line to the [p1-parser](https://github.com/svrooij/smartmeter2mqtt/blob/master/lib/p1-parser.js) for parsing and checking the message. To support extra data, you'll need to take a look at the [p1-map](https://github.com/svrooij/smartmeter2mqtt/blob/master/lib/p1-map.js) file, it contains the **id** used in the DSMR standard, the name in the result object and a **valueRetriever**. The **valueRetriever** is passed an array of values that where between brackets in the current line.
 
 Supporting other data fields is just a matter of changing the **p1-map** file.
 
