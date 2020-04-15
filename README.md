@@ -41,9 +41,9 @@ The [docker image](https://hub.docker.com/r/svrooij/smartmeter) is currently aut
 
 If you're reading from an USB to P1 cable, it's important that you connect the device to the container.
 The mapped location might change on reboot or if you connect other devices. That is why I recommend to connect the device by serial.
-You will need the real device location, type `ls /dev/serial/by-id` and not the device string that looks like `usb-FTDI_FT232R_USB_UART_A13LN4ZS-if00-port0` for my [cable](#p1-cable).
+You will need the real device location, type `ls /dev/serial/by-id` and note the device string that looks like `usb-FTDI_FT232R_USB_UART_A13LN4ZS-if00-port0` for my [cable](#p1-cable).
 
-Be sure to replace this serial in the docker compose file.
+Be sure to replace this device id in the docker compose file.
 
 #### Docker compose
 
@@ -52,7 +52,7 @@ version: "3.7"
 
 services:
   smartmeter:
-    image: svrooij/smartmeter:alpha
+    image: svrooij/smartmeter:latest
     devices: # Replace the device id with your found id, the device is mapped as /dev/ttyUSB0 inside the container.
       - /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A13LN4ZS-if00-port0:/dev/ttyUSB0
     restart: unless-stopped
@@ -81,33 +81,36 @@ You can set every setting with an environment variable prefixed with `SMARTMETER
 ## Usage
 
 ```bash
-smartmeter2mqtt 0.0.0-dev
+smartmeter2mqtt 0.0.0-development
 Publish data from your Smartmeter with a P1 interface to your MQTT server.
 
 Read from P1 to USB serial:
-smartmeter2mqtt --port /dev/ttyUSB0 [options]
+index.js --port /dev/ttyUSB0 [options]
 
 Read from tcp socket:
-smartmeter2mqtt --socket host:port [options]
+index.js --socket host:port [options]
 
 Options:
-  --port            The serial port to read, P1 to serial usb, eg.
-                    '/dev/ttyUSB0'
-  --socket          The tcp socket to read, if reading from serial to network
-                    device, as host:port, like '192.168.0.3:3000'
-  --web-server      Expose webserver on this port                       [number]
-  --post-url        Post the results to this url
-  --post-interval   Seconds between posts                [number] [default: 300]
-  --post-json       Post the data as json instead of form parameters   [boolean]
-  --mqtt-url        Send the data to this mqtt server
-  --mqtt-topic      Use this topic prefix for all messages
+  --port                   The serial port to read, P1 to serial usb, eg.
+                           '/dev/ttyUSB0'
+  --socket                 The tcp socket to read, if reading from serial to
+                           network device, as host:port, like '192.168.0.3:3000'
+  --web-server             Expose webserver on this port                [number]
+  --post-url               Post the results to this url
+  --post-interval          Seconds between posts         [number] [default: 300]
+  --post-json              Post the data as json instead of form parameters
+                                                                       [boolean]
+  --mqtt-url               Send the data to this mqtt server
+  --mqtt-topic             Use this topic prefix for all messages
                                                          [default: "smartmeter"]
-  --mqtt-distinct   Publish data distinct to mqtt                      [boolean]
-  --tcp-server      Expose JSON TCP socket on this port                 [number]
-  --raw-tcp-server  Expose RAW TCP socket on this port                  [number]
-  --debug           Enable debug output                                [boolean]
-  --version         Show version number                                [boolean]
-  -h, --help        Show help                                          [boolean]
+  --mqtt-distinct          Publish data distinct to mqtt               [boolean]
+  --mqtt-discovery         Emit auto-discovery message                 [boolean]
+  --mqtt-discovery-prefix  Autodiscovery prefix       [default: "homeassistant"]
+  --tcp-server             Expose JSON TCP socket on this port          [number]
+  --raw-tcp-server         Expose RAW TCP socket on this port           [number]
+  --debug                  Enable debug output                         [boolean]
+  --version                Show version number                         [boolean]
+  -h, --help               Show help                                   [boolean]
 
 All options can also be specified as Environment valiables
 Prefix them with 'SMARTMETER_' and make them all uppercase
@@ -251,7 +254,7 @@ Payload:
 
 #### MQTT - Auto discovery homeassistant
 
-If you're running home assistant, be sure to enable mqtt discovery `--mqtt-discovery` and `--mqtt-discovery-prefix` (defaults to `homeassistant`). This will make sure the following sensors will automattically show up in home assistant:
+If you're running home assistant, be sure to enable mqtt discovery `--mqtt-discovery` and `--mqtt-discovery-prefix` (defaults to `homeassistant`). This will make sure the following sensors will automatically show up in home assistant:
 
 - **Current usage**: Your current total usage (can be negative when delivering power)
 - **Total used T1**: Total power consumed from the grid in T1
