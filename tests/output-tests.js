@@ -2,7 +2,7 @@
 const assert = require('assert')
 const P1ReaderEvents = require('../lib/p1-reader-events')
 const DebugOutput = require('../lib/output/debug-output')
-const TcpServer = require('../lib/output/tcp-server')
+const TcpOutput = require('../lib/output/tcp-output')
 const WebServer = require('../lib/output/web-server')
 const HttpOutput = require('../lib/output/http-output')
 const EventEmitter = require('events')
@@ -18,16 +18,16 @@ describe('DebugOutput', function () {
   })
 })
 
-describe('TcpServer', function () {
+describe('TcpOutput', function () {
   it('Should subscribe to Parsed result event', function () {
     const fakeReader = new EventEmitter()
-    const tcpServer = new TcpServer()
+    const tcpServer = new TcpOutput()
     tcpServer.start(fakeReader, { startServer: false })
     assert.strictEqual(fakeReader.listenerCount(P1ReaderEvents.ParsedResult), 1, 'TCP server not subscribed to ParsedResult event')
   })
   it('Should subscribe to Line event for rawSocket: true', function () {
     const fakeReader = new EventEmitter()
-    const tcpServer = new TcpServer()
+    const tcpServer = new TcpOutput()
     tcpServer.start(fakeReader, { rawSocket: true, port: 3001, startServer: false })
     assert.strictEqual(fakeReader.listenerCount(P1ReaderEvents.Line), 1, 'Raw TCP server not subscribed to ParsedResult event')
   })

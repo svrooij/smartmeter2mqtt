@@ -72,10 +72,10 @@ class Smartmeter {
 
   _startTcpServer (port, raw = false) {
     console.log(`- Output: ${raw ? 'Raw' : 'JSON'} TCP socket on port ${port}`)
-    const TcpServer = require('./lib/output/tcp-server')
-    const tcpServer = new TcpServer()
-    tcpServer.start(this._reader, { port, rawSocket: raw === true })
-    this.outputs.push(tcpServer)
+    const TcpOutput = require('./lib/output/tcp-output')
+    const tcpOutput = new TcpOutput()
+    tcpOutput.start(this._reader, { port, rawSocket: raw === true })
+    this.outputs.push(tcpOutput)
   }
 
   _startWebServer (port) {
