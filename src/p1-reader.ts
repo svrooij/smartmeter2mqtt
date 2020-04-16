@@ -1,8 +1,9 @@
+import P1Parser from './p1-parser'
 const SerialPort = require('serialport')
 const Readline = require('@serialport/parser-readline')
 const Socket = require('net').Socket
 const EventEmitter = require('events')
-const P1Parser = require('./p1-parser')
+
 const P1ReaderEvents = require('./p1-reader-events')
 
 class P1Reader extends EventEmitter {
