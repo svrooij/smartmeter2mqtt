@@ -268,7 +268,7 @@ This section is for the curious ones.
 
 ### Support for output X
 
-This package comes with several outputs, they all extend [Output](https://github.com/svrooij/smartmeter2mqtt/blob/master/lib/output/output.js). Every new output should implement the `start(p1Reader, options)` method. They all get the instance of the current [P1Reader](https://github.com/svrooij/smartmeter2mqtt/blob/master/lib/p1-reader.js). So your new output should subscribe to one of the events. All events are defined in [P1ReaderEvents](https://github.com/svrooij/smartmeter2mqtt/blob/master/lib/p1-reader-events.js) and you should use the statics from the class, (even though they are just strings).
+This package comes with several outputs, they all extend [Output](https://github.com/svrooij/smartmeter2mqtt/blob/master/src/output/output.js). Every new output should implement the `start(p1Reader, options)` method. They all get the instance of the current [P1Reader](https://github.com/svrooij/smartmeter2mqtt/blob/master/src/p1-reader.js). So your new output should subscribe to one of the events. All events are defined in [P1ReaderEvents](https://github.com/svrooij/smartmeter2mqtt/blob/master/src/p1-reader-events.js) and you should use the statics from the class, (even though they are just strings).
 
 - **P1ReaderEvents.ParsedResult** to get the parsed result (if crc check validates), probably the one you want.
 - **P1ReaderEvents.UsageChange** to get the changes in current usage. Already computed you dont have to.
@@ -340,7 +340,7 @@ My Keifa meter outputs the following data as you connect to the serial connectio
 
 ### Parsing messages explained
 
-The [p1-reader](https://github.com/svrooij/smartmeter2mqtt/blob/master/lib/p1-reader.js) is responsible for connecting to one of the sources, it is an eventemitter that outputs the following events `line`, `dsmr`, `raw`, `usageChange`. It will send each line to the [p1-parser](https://github.com/svrooij/smartmeter2mqtt/blob/master/lib/p1-parser.js) for parsing and checking the message. To support extra data, you'll need to take a look at the [p1-map](https://github.com/svrooij/smartmeter2mqtt/blob/master/lib/p1-map.js) file, it contains the **id** used in the DSMR standard, the name in the result object and a **valueRetriever**. The **valueRetriever** is passed an array of values that where between brackets in the current line.
+The [p1-reader](https://github.com/svrooij/smartmeter2mqtt/blob/master/src/p1-reader.js) is responsible for connecting to one of the sources, it is an eventemitter that outputs the following events `line`, `dsmr`, `raw`, `usageChange`. It will send each line to the [p1-parser](https://github.com/svrooij/smartmeter2mqtt/blob/master/src/p1-parser.js) for parsing and checking the message. To support extra data, you'll need to take a look at the [p1-map](https://github.com/svrooij/smartmeter2mqtt/blob/master/src/p1-map.js) file, it contains the **id** used in the DSMR standard, the name in the result object and a **valueRetriever**. The **valueRetriever** is passed an array of values that where between brackets in the current line.
 
 Supporting other data fields is just a matter of changing the **p1-map** file.
 

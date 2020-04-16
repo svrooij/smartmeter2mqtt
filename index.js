@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const P1Reader = require('./lib/p1-reader')
-const config = require('./lib/config')
+const P1Reader = require('./src/p1-reader')
+const config = require('./src/config')
 
 class Smartmeter {
   constructor () {
