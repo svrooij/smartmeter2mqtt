@@ -1,73 +1,72 @@
-const IntervalOutput = require('./interval-output')
-const P1ReaderEvents = require('../p1-reader-events')
-const fetch = require('node-fetch')
+import fetch, { Response } from 'node-fetch';
+import { URLSearchParams } from 'url';
 
-class HttpOutput extends IntervalOutput {
-  constructor () {
-    super()
-    this._url = ''
-    this._method = 'post'
-    this._postJson = false
-    this._fields = null
+import { HttpPostConfig } from '../config';
+import { IntervalOutput } from './interval-output';
+import P1Reader from '../p1-reader';
+import P1ReaderEvents from '../p1-reader-events';
+
+export class HttpOutput extends IntervalOutput {
+  private fields?: Array<string>;
+
+  constructor(private config: HttpPostConfig) {
+    super(config.interval);
   }
 
-  start (p1Reader, options = {}) {
-    options = Object.assign(HttpOutput.DefaultOptions, options)
-    super.start(p1Reader, options)
-    this._url = options.url
-    this._postJson = options.postJson === true
-    if (options.fields) this._fields = options.fields.split(',')
-    this.on(P1ReaderEvents.ParsedResult, this._sendEvent)
-  }
-
-  static get DefaultOptions () {
-    return {
-      interval: 300,
-      url: '',
-      postJson: false,
-      fields: 'powerTs,totalT1Use,totalT1Delivered,totalT2Use,totalT1Delivered,gas_totalUse,gas_ts'
-    }
-  }
-
-  _sendEvent (data) {
-    const self = this
-    data = this._flatten(data)
-    if (this._fields) data = this._filterData(data)
-    const params = this._postJson ? {
-      method: 'post',
-      body: JSON.stringify(data),
-      headers: { 'Content-Type': 'application/json' }
-    } : {
-      method: 'post',
-      body: new URLSearchParams(data)
-    }
-    fetch(this._url, params)
-      .then(result => {
-        if (!result.ok) throw new Error(result.statusText)
+  start(p1Reader: P1Reader) {
+    super.start(p1Reader);
+    this.fields = this.config.fields.split(',');
+    this.on(P1ReaderEvents.ParsedResult, (data) => this._sendEvent(data)
+      .then((result) => {
+        if (!result.ok) {
+          throw new Error(result.statusText);
+        }
       })
-      .catch(err => {
-        self.emit(P1ReaderEvents.ErrorMessage, err)
-      })
+      .catch((err) => {
+        this.emit(P1ReaderEvents.ErrorMessage, err);
+      }));
   }
 
-  _filterData (data) {
-    const filtered = Object.keys(data)
-      .filter(key => this._fields.includes(key))
-      .reduce((obj, key) => {
-        obj[key] = data[key]
-        return obj
-      }, {})
-    return filtered
+
+  _sendEvent(data: any): Promise<Response> {
+    let flatData = HttpOutput.flatten(data);
+    if (this.fields) {
+      flatData = this._filterData(flatData);
+    }
+
+    if (this.config.json) {
+      return fetch(this.config.url, {
+        method: 'post',
+        body: JSON.stringify(flatData),
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    return fetch(this.config.url, {
+      method: 'post',
+      body: new URLSearchParams(flatData),
+    });
   }
 
-  _flatten (data) {
+  _filterData(data: any): any {
+    if (this.fields === undefined) {
+      return data;
+    }
+    const result: {[key: string]: any} = {};
+    const { fields } = this;
+    Object.keys(data)
+      .filter((key) => fields.includes(key))
+      .forEach((key) => {
+        result[key] = data[key];
+      });
+    return result;
+  }
+
+  private static flatten(data: any) {
     if (data.gas) {
-      data.gas_ts = data.gas.ts
-      data.gas_totalUse = data.gas.totalUse
-      delete data.gas
+      data.gas_ts = data.gas.ts;
+      data.gas_totalUse = data.gas.totalUse;
+      delete data.gas;
     }
-    return data
+    return data;
   }
 }
-
-module.exports = HttpOutput

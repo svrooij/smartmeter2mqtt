@@ -1,125 +1,105 @@
 #!/usr/bin/env node
 
-const P1Reader = require('./src/p1-reader')
-const config = require('./src/config')
+import P1Reader from './p1-reader';
+import { ConfigLoader } from './config';
+import { Output } from './output/output';
+import { WebServer } from './output/web-server';
+import { TcpOutput } from './output/tcp-output';
+import { MqttOutput } from './output/mqtt-output';
+import { HttpOutput } from './output/http-output';
+import { DebugOutput } from './output/debug-output';
 
 class Smartmeter {
-  constructor () {
-    this._reader = new P1Reader()
-    console.clear()
-    console.log('----------------------------------------')
-    console.log('- Smartmeter2mqtt by Stephan van Rooij -')
-    console.log('- Press CTRL+C to close                -')
-    console.log('----------------------------------------')
-    this.outputs = []
+  private reader: P1Reader;
+
+  private outputs: Array<Output> = [];
+
+  private config = ConfigLoader.Load();
+
+  constructor() {
+    this.reader = new P1Reader();
+    console.clear();
+    console.log('----------------------------------------');
+    console.log('- Smartmeter2mqtt by Stephan van Rooij -');
+    console.log('- Press CTRL+C to close                -');
+    console.log('----------------------------------------');
   }
 
-  start () {
-    if (config.port && config.port.length > 0) {
-      console.log('- Read serial port %s', config.port)
-      this._reader.startWithSerialPort(config.port)
-    } else if (config.socket && config.socket.length > 0) {
-      const parts = config.socket.toString().split(':')
+  start() {
+    if (this.config.serialPort && this.config.serialPort.length > 0) {
+      console.log('- Read serial port %s', this.config.serialPort);
+      this.reader.startWithSerialPort(this.config.serialPort);
+    } else if (this.config.socket && this.config.socket.length > 0) {
+      const parts = this.config.socket.split(':');
       if (parts.length !== 2) {
-        console.warn('Socket incorrect format \'host:port\'')
-        process.exit(3)
+        console.warn('Socket incorrect format \'host:port\'');
+        process.exit(3);
       }
-      console.log('- Read from socket %s', config.socket)
-      this._reader.startWithSocket(parts[0], parseInt(parts[1]))
+      console.log('- Read from socket %s', this.config.socket);
+      this.reader.startWithSocket(parts[0], parseInt(parts[1]));
     } else {
-      console.warn('Port or socket required')
-      process.exit(2)
+      console.warn('Port or socket required');
+      process.exit(2);
     }
-    this._startOutputs()
+    this._startOutputs();
   }
 
-  async stop () {
-    await Promise.all(this.outputs.map(output => output.close())).catch(err => {
-      console.warn(err)
-    })
-    await this._reader.close()
-    process.exit()
+  async stop() {
+    await Promise.all(this.outputs.map((output) => output.close())).catch((err) => {
+      console.warn(err);
+    });
+    await this.reader.close();
+    process.exit();
   }
 
-  _startOutputs () {
-    if (config['web-server'] > 0) this._startWebServer(config['web-server'])
-    if (config['tcp-server'] > 0) {
-      this._reader.startParsing(true)
-      this._startTcpServer(config['tcp-server'])
+  _startOutputs() {
+    if (this.config.outputs.debug) {
+      console.log('- Output: debug');
+      this.outputs.push(new DebugOutput());
     }
 
-    if (config['mqtt-url']) {
-      this._startMqtt({
-        url: config['mqtt-url'],
-        topic: config['mqtt-topic'],
-        discovery: config['mqtt-discovery'] === true,
-        discoveryPrefix: config['mqtt-discovery-prefix'],
-        publishDistinct: config['mqtt-distinct'] === true
-      })
+    if (this.config.outputs.jsonSocket) {
+      console.log(`- Output: JSON TCP socket on port ${this.config.outputs.jsonSocket}`);
+      this.outputs.push(new TcpOutput(this.config.outputs.jsonSocket, false, true));
     }
 
-    if (config['post-url']) this._startHttp({ url: config['post-url'], interval: config['post-interval'], postJson: config['post-json'] === true })
+    if (this.config.outputs.mqtt) {
+      console.log('- Output: Mqtt to %s', this.config.outputs.mqtt.url);
+      this.outputs.push(new MqttOutput(this.config.outputs.mqtt));
+    }
 
-    if (config['raw-tcp-server'] > 0) this._startTcpServer(config['raw-tcp-server'], true)
+    if (this.config.outputs.post) {
+      console.log('- Output: Post data to %s every %d sec.', this.config.outputs.post.url, this.config.outputs.post.interval);
+      this.outputs.push(new HttpOutput(this.config.outputs.post));
+    }
 
-    if (config.debug) this.debug()
+    if (this.config.outputs.rawSocket) {
+      console.log(`- Output: Raw TCP socket on port ${this.config.outputs.rawSocket}`);
+
+      this.outputs.push(new TcpOutput(this.config.outputs.rawSocket, true, true));
+    }
+
+    if (this.config.outputs.webserver) {
+      console.log('- Output: Webserver on port %d', this.config.outputs.webserver);
+      this.outputs.push(new WebServer(this.config.outputs.webserver, true));
+    }
 
     if (this.outputs.length === 0) {
-      console.warn('No outputs enabled, you should enable at least one.')
-      process.exit(5)
+      console.warn('No outputs enabled, you should enable at least one.');
+      process.exit(5);
+    } else {
+      this.reader.startParsing();
+      this.outputs.forEach((output) => {
+        output.start(this.reader);
+      });
     }
-  }
-
-  _startTcpServer (port, raw = false) {
-    console.log(`- Output: ${raw ? 'Raw' : 'JSON'} TCP socket on port ${port}`)
-    const TcpOutput = require('./lib/output/tcp-output')
-    const tcpOutput = new TcpOutput()
-    tcpOutput.start(this._reader, { port, rawSocket: raw === true })
-    this.outputs.push(tcpOutput)
-  }
-
-  _startWebServer (port) {
-    this._reader.startParsing(true)
-    console.log('- Output: Webserver on port %d', port)
-    const WebServer = require('./lib/output/web-server')
-    const webserver = new WebServer()
-    webserver.start(this._reader, { port: port })
-    this.outputs.push(webserver)
-  }
-
-  _startHttp (options = {}) {
-    this._reader.startParsing(true)
-    console.log('- Output: Post data to %s every %d sec.', options.url, options.interval)
-    const HttpOutput = require('./lib/output/http-output')
-    const httpOutput = new HttpOutput()
-    httpOutput.start(this._reader, options)
-    this.outputs.push(httpOutput)
-  }
-
-  _startMqtt (options = {}) {
-    this._reader.startParsing(true)
-    console.log('- Output: Mqtt to %s', options.url)
-    const MqttOutput = require('./lib/output/mqtt-output')
-    const mqttOutput = new MqttOutput()
-    mqttOutput.start(this._reader, options)
-    this.outputs.push(mqttOutput)
-  }
-
-  debug () {
-    console.log('- Output: debug')
-    this._reader.startParsing(true)
-
-    const DebugOutput = require('./lib/output/debug-output')
-    const debugOutput = new DebugOutput()
-    debugOutput.start(this._reader)
-    this.outputs.push(debugOutput)
   }
 }
 
-const smartmeter = new Smartmeter()
-smartmeter.start()
+const smartmeter = new Smartmeter();
+smartmeter.start();
 
-process.on('SIGINT', () => {
-  console.log('Exiting....')
-  smartmeter.stop()
-})
+process.on('SIGINT', async () => {
+  console.log('Exiting....');
+  await smartmeter.stop();
+});

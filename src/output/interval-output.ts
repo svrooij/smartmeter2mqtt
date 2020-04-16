@@ -1,31 +1,43 @@
-const Output = require('./output')
-const P1ReaderEvents = require('../p1-reader-events')
+import P1Reader from '../p1-reader';
+import { Output } from './output';
+import P1ReaderEvents from '../p1-reader-events';
 
-class IntervalOutput extends Output {
-  constructor () {
-    super()
-    this._timer = null
-    this._publishEvent = true
+export class IntervalOutput extends Output {
+  private timer?: NodeJS.Timeout;
+
+  private publishNextEvent: boolean;
+
+  private interval?: number;
+
+  constructor(interval?: number) {
+    super();
+    this.publishNextEvent = true;
+    this.interval = interval ?? 60;
   }
 
-  start (p1Reader, options = { interval: 60 }) {
-    if (p1Reader === undefined) throw new Error('p1Reader is undefined!')
-    if (typeof (options.interval) !== 'number') throw new Error('Interval should be a number')
+  start(p1Reader: P1Reader) {
+    if (p1Reader === undefined) throw new Error('p1Reader is undefined!');
 
-    p1Reader.on(P1ReaderEvents.ParsedResult, result => {
-      if (this._publishEvent) this.emit(P1ReaderEvents.ParsedResult, result)
-      this._publishEvent = false
-    })
-    p1Reader.on(P1ReaderEvents.UsageChanged, result => this.emit(P1ReaderEvents.UsageChanged))
 
-    this._timer = setInterval(() => {
-      this._publishEvent = true
-    }, options.interval * 1000)
+    p1Reader.on(P1ReaderEvents.ParsedResult, (result) => {
+      if (this.publishNextEvent) {
+        this.emit(P1ReaderEvents.ParsedResult, result);
+        this.publishNextEvent = false;
+      }
+    });
+    p1Reader.on(P1ReaderEvents.UsageChanged, (result) => {
+      this.emit(P1ReaderEvents.UsageChanged);
+    });
+
+    this.timer = setInterval(() => {
+      this.publishNextEvent = true;
+    }, (this.interval ?? 60) * 1000);
   }
 
-  close () {
-    clearInterval(this._timer)
+  close(): Promise<void> {
+    if (this.timer) {
+      clearInterval(this.timer);
+    }
+    return Promise.resolve();
   }
 }
-
-module.exports = IntervalOutput

@@ -1,101 +1,124 @@
-import P1Parser from './p1-parser'
-const SerialPort = require('serialport')
-const Readline = require('@serialport/parser-readline')
-const Socket = require('net').Socket
-const EventEmitter = require('events')
+import SerialPort from 'serialport';
+import { Socket } from 'net';
+import { EventEmitter } from 'events';
+import P1Parser from './p1-parser';
+import P1ReaderEvents from './p1-reader-events';
+import DsmrMessage from './dsmr-message';
 
-const P1ReaderEvents = require('./p1-reader-events')
+export default class P1Reader extends EventEmitter {
+  private usage: number;
 
-class P1Reader extends EventEmitter {
-  constructor (path, baudRate) {
-    super()
-    this._usage = 0
-    this._reading = false
+  private reading: boolean;
+
+  private parsing: boolean;
+
+  private lastResult?: DsmrMessage;
+
+  // Serial port stuff
+  private serialPort?: SerialPort;
+
+  private serialParser?: SerialPort.parsers.Readline;
+
+  // TCP Socket stuff
+  private socket?: Socket;
+
+  private parser?: P1Parser;
+
+  constructor() {
+    super();
+    this.usage = 0;
+    this.reading = false;
+    this.parsing = false;
   }
 
-  startWithSerialPort (path, baudRate = 115200) {
-    if (this._reading) throw new Error('Already reading')
-    this._port = new SerialPort(path, { baudRate: baudRate })
-    this._serialParser = new Readline({ delimiter: '\r\n' })
-    this._port.pipe(this._serialParser)
-    this._serialParser.on('data', line => {
-      this.emit(P1ReaderEvents.Line, line)
-      if (P1Parser.isStart(line)) this.emit(P1ReaderEvents.Line, '')
-    })
-    this._reading = true
+  startWithSerialPort(path: string, baudRate = 115200): void {
+    if (this.reading) throw new Error('Already reading');
+    this.serialPort = new SerialPort(path, { baudRate });
+    this.serialParser = new SerialPort.parsers.Readline({ delimiter: '\r\n' });
+    this.serialPort.pipe(this.serialParser);
+    this.serialParser.on('data', (line) => {
+      this.emit(P1ReaderEvents.Line, line);
+      if (P1Parser.isStart(line)) this.emit(P1ReaderEvents.Line, '');
+    });
+    this.reading = true;
   }
 
-  startWithSocket (host, port) {
-    this._socket = new Socket()
-    this._socket.connect(port, host)
-    this._socket.setEncoding('ascii')
-    this._socket.on('data', data => {
-      const lines = data.toString().trim().split('\n')
+  startWithSocket(host: string, port: number): void {
+    this.socket = new Socket();
+    this.socket.connect(port, host);
+    this.socket.setEncoding('ascii');
+    this.socket.on('data', (data) => {
+      const lines = data.toString().trim().split('\n');
       lines.forEach((line) => {
-        this.emit(P1ReaderEvents.Line, line)
-      })
-    })
+        this.emit(P1ReaderEvents.Line, line);
+      });
+    });
 
-    this._socket.on('close', (hasError) => {
-      console.warn('Socket connection closed')
-      process.exit(10)
-    })
+    this.socket.on('close', (hasError) => {
+      console.warn('Socket connection closed');
+      process.exit(10);
+    });
   }
 
-  startParsing (crcCheck = false) {
-    if (this._parsing) return
-    this._crcCheck = crcCheck
-    this._parser = new P1Parser(crcCheck)
-    this.on(P1ReaderEvents.Line, line => { this._parseLine(line.trim()) })
-    this._parsing = true
+  startParsing(): void {
+    if (this.parsing) return;
+    this.parser = new P1Parser();
+    this.on(P1ReaderEvents.Line, (line) => { this.parseLine(line.trim()); });
+    this.parsing = true;
   }
 
-  _parseLine (line) {
-    var self = this
+  parseLine(line: string): void {
     if (P1Parser.isStart(line)) {
-      this._parser = new P1Parser(this._crcCheck)
-      this._parser.addLine(line)
-    } else if (this._parser && this._parser.addLine(line)) {
-      self._handleEnd()
+      this.parser = new P1Parser();
+      this.parser.addLine(line);
+    } else if (this.parser && this.parser.addLine(line)) {
+      this.handleEnd();
     }
   }
 
-  _handleEnd () {
-    this._lastMessage = this._parser.originalMessage()
-    this.emit(P1ReaderEvents.Raw, this._lastMessage)
-    const result = this._parser.result()
-    if (this._crcCheck && !result.crc) {
-      this.emit(P1ReaderEvents.ErrorMessage, 'CRC failed')
-      return
+  handleEnd() {
+    if (this.parser === undefined) {
+      throw new Error('Parser not running');
     }
-    result.calculatedUsage = Math.round(((result.currentUsage || 0.0) - (result.currentDelivery || 0.0)) * 1000)
-    this._lastResult = result
-    this.emit(P1ReaderEvents.ParsedResult, this._lastResult)
+    // this._lastMessage = this._parser.originalMessage()
+    const originalMessage = this.parser.message;
+    this.emit(P1ReaderEvents.Raw, originalMessage);
+    const result = this.parser.data;
+    if (!result.crc) {
+      this.emit(P1ReaderEvents.ErrorMessage, 'CRC failed');
+      return;
+    }
+    result.calculatedUsage = Math.round(((result.currentUsage || 0.0) - (result.currentDelivery || 0.0)) * 1000);
+    this.lastResult = result;
+    this.emit(P1ReaderEvents.ParsedResult, this.lastResult);
 
-    if (this._usage !== result.calculatedUsage) {
-      const relative = (result.calculatedUsage - this._usage)
+    if (this.usage !== result.calculatedUsage) {
+      const relative = (result.calculatedUsage - this.usage);
       this.emit(P1ReaderEvents.UsageChanged, {
-        previousUsage: this._usage,
+        previousUsage: this.usage,
         currentUsage: result.calculatedUsage,
-        relative: relative,
-        message: `Usage ${(relative > 0 ? 'increased +' : 'decreased ')}${relative} to ${result.calculatedUsage}`
-      })
-      this._usage = result.calculatedUsage
+        relative,
+        message: `Usage ${(relative > 0 ? 'increased +' : 'decreased ')}${relative} to ${result.calculatedUsage}`,
+      });
+      this.usage = result.calculatedUsage;
     }
   }
 
-  close () {
+  close() {
     return new Promise((resolve, reject) => {
-      this._reading = false
-      if (this._port) {
-        this._port.close(resolve)
+      this.reading = false;
+      if (this.serialPort) {
+        this.serialPort.close(resolve);
+      } else if (this.socket) {
+        this.socket.destroy();
+        resolve();
       } else {
-        resolve()
+        resolve();
       }
     }).then(() => {
-      console.log(' - Reader closed')
-    })
+      console.log(' - Reader closed');
+    });
   }
 }
 
-module.exports = P1Reader
+module.exports = P1Reader;

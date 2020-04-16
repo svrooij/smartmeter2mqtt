@@ -1,86 +1,99 @@
-const Express = require('express')
-const http = require('http')
-const WebSocket = require('ws')
-const path = require('path')
-const Output = require('./output')
-const P1ReaderEvents = require('../p1-reader-events')
+import http, { Server } from 'http';
+import WebSocket from 'ws';
+import path from 'path';
+import { Output } from './output';
+import P1ReaderEvents from '../p1-reader-events';
+import P1Reader from '../p1-reader';
+import DsmrMessage from '../dsmr-message';
 
-class WebServer extends Output {
-  constructor (port) {
-    super()
-    this._port = 3000
+import express = require('express');
+
+export class WebServer extends Output {
+  private server?: Server;
+
+  private wsServer?: WebSocket.Server;
+
+  private lastReading?: DsmrMessage;
+
+  private checkTimeout?: NodeJS.Timeout;
+
+  constructor(private readonly port: number, private readonly startServer = true) {
+    super();
   }
 
-  start (p1Reader, options = {}) {
-    if (p1Reader === undefined) throw new Error('p1Reader is undefined!')
-    if (options.port && typeof (options.port) === 'number') this._port = options.port
+  start(p1Reader: P1Reader) {
+    if (p1Reader === undefined) throw new Error('p1Reader is undefined!');
 
-    p1Reader.on(P1ReaderEvents.ParsedResult, data => {
-      this._setReading(data)
-    })
-    if (options.startServer !== false) {
-      this._start(options.useSockets)
+    p1Reader.on(P1ReaderEvents.ParsedResult, (data) => {
+      this._setReading(data);
+    });
+    if (this.startServer === false) {
+      this._start();
     }
   }
 
-  _start (startSockets = true) {
-    const app = new Express()
-    this._server = http.createServer(app)
+  _start(startSockets = true) {
+    const app = express();
+
+    this.server = http.createServer(app);
     if (startSockets) {
-      this._sockets = new WebSocket.Server({ server: this._server })
-      this._sockets.on('connection', (ws) => {
-        ws.isAlive = true
-        ws.on('pong', () => {
-          ws.isAlive = true
-        })
-        if (this._reading) {
-          ws.send(JSON.stringify(this._reading))
+      this.wsServer = new WebSocket.Server({ server: this.server });
+      this.wsServer.on('connection', (ws) => {
+        // ws.isAlive = true
+        // ws.on('pong', () => {
+        //   ws.isAlive = true
+        // })
+        if (this.lastReading) {
+          ws.send(JSON.stringify(this.lastReading));
         } else {
-          ws.send('{"err":"No reading just yet"}')
+          ws.send('{"err":"No reading just yet"}');
         }
-      })
+      });
     }
-    app.get('/api/reading', (req, res) => this._getReading(req, res))
-    app.use(Express.static(path.join(__dirname, 'wwwroot'), { index: 'index.html' }))
-    this._server.listen(this._port)
-    this._checkInterval = setInterval(() => { this._checkSockets() }, 10000)
+    app.get('/api/reading', (req, res) => this._getReading(req, res));
+    app.use(express.static(path.join(__dirname, 'wwwroot'), { index: 'index.html' }));
+    this.server.listen(this.port);
+    this.checkTimeout = setInterval(() => { this._checkSockets(); }, 10000);
   }
 
-  close () {
+  close(): Promise<void> {
     return new Promise((resolve, reject) => {
-      if (this._checkInterval) clearInterval(this._checkInterval)
-      this._server.close(resolve)
-    })
+      if (this.checkTimeout) clearInterval(this.checkTimeout);
+      this.server?.close(() => {
+        resolve();
+      });
+    });
   }
 
-  _getReading (req, res) {
-    if (this._reading) res.json(this._reading)
-    else res.status(400).json({ err: 'No reading just yet!' })
+  _getReading(req: any, res: any): void {
+    if (this.lastReading) {
+      res.json(this.lastReading);
+    } else {
+      res.status(400).json({ err: 'No reading just yet!' });
+    }
   }
 
-  _setReading (newReading) {
-    this._reading = newReading
-    this._broadcastMessage(newReading)
+  _setReading(newReading: DsmrMessage) {
+    this.lastReading = newReading;
+    this._broadcastMessage(newReading);
   }
 
-  _checkSockets () {
-    this._sockets.clients.forEach(client => {
-      if (!client.isAlive) return client.terminate()
-      client.isAlive = false
-      client.ping(null, false, true)
-    })
+  _checkSockets(): void {
+    // this._sockets.clients.forEach(client => {
+    //   if (!client.isAlive) return client.terminate()
+    //   client.isAlive = false
+    //   client.ping(null, false, true)
+    // })
   }
 
-  _broadcastMessage (msg) {
-    if (this._sockets) {
-      const readingString = JSON.stringify(msg)
-      this._sockets.clients.forEach(client => {
-        if (client.isAlive) {
-          client.send(readingString)
-        }
-      })
+  _broadcastMessage(msg: DsmrMessage) {
+    if (this.wsServer) {
+      const readingString = JSON.stringify(msg);
+      this.wsServer.clients.forEach((client) => {
+        client.send(readingString);
+      });
     }
   }
 }
 
-module.exports = WebServer
+module.exports = WebServer;

@@ -1,10 +1,10 @@
-import { GasValue } from "./gas-value";
-import DataPoint from "./datapoint";
+import { GasValue } from './gas-value';
+import DataPoint from './datapoint';
 
 interface P1MapItem {
   id: string;
   name: string;
-  valueRetriever?(values?: Array<string>): string | number | GasValue | undefined
+  valueRetriever?(values?: Array<string>): string | number | GasValue | undefined;
 }
 
 export default class P1Map {
@@ -12,52 +12,49 @@ export default class P1Map {
 
   public static parseLine(line: string): DataPoint | undefined {
     if (line && line.length > 0) {
-      const identifier = line.substr(0, line.indexOf('('))
-      const values = P1Map.stringsInBrackets(line)
+      const identifier = line.substr(0, line.indexOf('('));
+      const values = P1Map.stringsInBrackets(line);
       const result = { id: identifier, rawValues: values } as DataPoint;
-      const mapping = P1Map.mapping.find(m => {
-        return m.id === identifier
-      })
+      const mapping = P1Map.mapping.find((m) => m.id === identifier);
       if (mapping) {
-        result.name = mapping.name
+        result.name = mapping.name;
         if (mapping.valueRetriever) {
-          result.value = mapping.valueRetriever(values)
-          delete result.rawValues
+          result.value = mapping.valueRetriever(values);
+          delete result.rawValues;
         }
       }
-      return result
+      return result;
     }
     return undefined;
   }
 
-  private static stringsInBrackets (line: string): Array<string> | undefined {
-    var matches = line.match(/\((.*?)\)/g)
+  private static stringsInBrackets(line: string): Array<string> | undefined {
+    const matches = line.match(/\((.*?)\)/g);
     if (matches) {
-      return matches.map(value => { return value.replace(/[()]/g, '') })
+      return matches.map((value) => value.replace(/[()]/g, ''));
     }
-    return undefined
+    return undefined;
   }
 
   private static getFirstString(values?: Array<string>): string | undefined {
-    if(values)
-      return values[0];
+    if (values) return values[0];
     return undefined;
   }
 
   private static parseFirstFloat(values?: Array<string>): number | undefined {
-    return P1Map.parseFloat(P1Map.getFirstString(values))
+    return P1Map.parseFloat(P1Map.getFirstString(values));
   }
 
   private static parseFloat(input?: string): number | undefined {
-    if(input === undefined) {
+    if (input === undefined) {
       return undefined;
     }
-    const parsableValue = input.substr(0, input.indexOf('*'))
-    return parseFloat(parsableValue)
+    const parsableValue = input.substr(0, input.indexOf('*'));
+    return parseFloat(parsableValue);
   }
 
   private static parseFirstInt(values?: Array<string>): number {
-    return parseInt(P1Map.getFirstString(values) ?? '0', 10)
+    return parseInt(P1Map.getFirstString(values) ?? '0', 10);
   }
 
   private static parseFirstTimestamp(values?: Array<string>): string | undefined {
@@ -65,20 +62,20 @@ export default class P1Map {
   }
 
   private static parseTimestamp(value?: string): string | undefined {
-    if(value === undefined) { return undefined; }
+    if (value === undefined) { return undefined; }
 
-    const parts = value.match(/.{1,2}/g)
-    if(parts === null) { return undefined; }
-    const dateString = `20${parts[0]}-${parts[1]}-${parts[2]}T${parts[3]}:${parts[4]}:${parts[5]}`
-    return dateString
+    const parts = value.match(/.{1,2}/g);
+    if (parts === null) { return undefined; }
+    const dateString = `20${parts[0]}-${parts[1]}-${parts[2]}T${parts[3]}:${parts[4]}:${parts[5]}`;
+    return dateString;
   }
 
   private static parseGasValue(values?: Array<string>): GasValue | undefined {
-    if(values !== undefined && values.length >= 2) {
+    if (values !== undefined && values.length >= 2) {
       return {
         ts: P1Map.parseTimestamp(values[0]),
-        totalUse: P1Map.parseFloat(values[1])
-      }
+        totalUse: P1Map.parseFloat(values[1]),
+      };
     }
     return undefined;
   }
@@ -113,6 +110,6 @@ export default class P1Map {
     { id: '1-0:62.7.0', name: 'currentDeliveryL3', valueRetriever: P1Map.parseFirstFloat },
     { id: '0-2:24.1.0', name: 'deviceType', valueRetriever: P1Map.getFirstString },
     { id: '0-2:96.1.0', name: 'gasSn', valueRetriever: P1Map.getFirstString },
-    { id: '0-2:24.2.1', name: 'gas', valueRetriever: P1Map.parseGasValue }
+    { id: '0-2:24.2.1', name: 'gas', valueRetriever: P1Map.parseGasValue },
   ] as Array<P1MapItem>;
 }
