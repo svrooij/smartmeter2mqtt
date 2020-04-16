@@ -1,12 +1,13 @@
-import mqtt, { MqttClient } from 'mqtt';
-import { Output } from './output';
+import mqtt, { MqttClient, IClientOptions } from 'mqtt';
+import Output from './output';
 import P1ReaderEvents from '../p1-reader-events';
 
 
 import { MqttConfig } from '../config';
 import P1Reader from '../p1-reader';
+import DsmrMessage from '../dsmr-message';
 
-export class MqttOutput extends Output {
+export default class MqttOutput extends Output {
   private mqtt?: MqttClient;
 
   private discoverySend = false;
@@ -15,69 +16,70 @@ export class MqttOutput extends Output {
     super();
   }
 
-  start(p1Reader: P1Reader) {
-    this.mqtt = mqtt.connect(this.config.url);
+  start(p1Reader: P1Reader): void {
+    this.mqtt = mqtt.connect(this.config.url, this.MqttOptions);
     this.mqtt.on('connect', () => {
       this.mqtt?.publish(`${this.config.prefix}/connected`, '2', { qos: 0, retain: true });
     });
     p1Reader.on(P1ReaderEvents.ParsedResult, (data) => {
-      this._publishData(data);
+      this.publishData(data);
       if (this.config.discovery && !this.discoverySend) {
-        this._publishAutoDiscovery(data);
+        this.publishAutoDiscovery(data);
         this.discoverySend = true;
       }
     });
     p1Reader.on(P1ReaderEvents.UsageChanged, (data) => {
-      this._publishUsage(data);
+      this.publishUsage(data);
     });
   }
 
-  async stop() {
-    return new Promise((resolve, reject) => {
+  async close(): Promise<void> {
+    return new Promise((resolve) => {
       this.mqtt?.end(false, {}, resolve);
     });
   }
 
-  get MqttOptions() {
+  private get MqttOptions(): IClientOptions {
     return {
       will: {
         topic: `${this.config.prefix}/connected`,
         retain: true,
-        payload: 0,
+        payload: '0',
+        qos: 0,
       },
     };
   }
 
-  _getTopic(suffix: string): string {
+  private getTopic(suffix: string): string {
     return `${this.config.prefix}/status/${suffix}`;
   }
 
-  _publishUsage(data: any): void {
-    data.val = data.currentUsage;
-    delete data.currentUsage;
-    data.tc = Date.now();
-    this.mqtt?.publish(this._getTopic('usage'), JSON.stringify(data), { qos: 0, retain: false });
+  private publishUsage(data: any): void {
+    const message = data;
+    message.val = data.currentUsage;
+    delete message.currentUsage;
+    message.tc = Date.now();
+    this.mqtt?.publish(this.getTopic('usage'), JSON.stringify(message), { qos: 0, retain: false });
   }
 
-  _publishData(data: any) {
+  private publishData(data: DsmrMessage): void {
     if (this.config.distinct) {
-      const distinctVal = { ts: Date.now(), val: undefined };
       this.config.distinctFields.forEach((element) => {
         if (data[element]) {
-          distinctVal.val = data[element];
-          this._sendToMqtt(element, distinctVal);
+          const distinctVal = { ts: Date.now(), val: data[element] };
+          this.sendToMqtt(element, distinctVal);
         }
       });
     } else {
-      this._sendToMqtt('energy', data);
+      this.sendToMqtt('energy', data);
     }
   }
 
-  _sendToMqtt(topicSuffix: string, data: any): void {
-    this.mqtt?.publish(this._getTopic(topicSuffix), JSON.stringify(data), { qos: 0, retain: true });
+  private sendToMqtt(topicSuffix: string, data: any): void {
+    this.mqtt?.publish(this.getTopic(topicSuffix), JSON.stringify(data), { qos: 0, retain: true });
   }
 
-  _publishAutoDiscovery(data: any) {
+  private publishAutoDiscovery(data: DsmrMessage): void {
     // Current usage
     const device = {
       // json_attributes: true,

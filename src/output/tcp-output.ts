@@ -1,16 +1,16 @@
 import { TcpServer } from '@svrooij/tcp-server';
-import { Output } from './output';
+import Output from './output';
 import P1ReaderEvents from '../p1-reader-events';
 import P1Reader from '../p1-reader';
 
-export class TcpOutput extends Output {
+export default class TcpOutput extends Output {
   private server?: TcpServer;
 
   constructor(private port: number, private raw = false, private startServer = true) {
     super();
   }
 
-  start(p1Reader: P1Reader) {
+  start(p1Reader: P1Reader): void {
     if (p1Reader === undefined) {
       throw new Error('p1Reader is undefined!');
     }

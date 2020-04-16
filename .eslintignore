@@ -6,3 +6,5 @@ dist
 coverage
 
 jest.config.js
+
+src/output/wwwroot/**/*.js

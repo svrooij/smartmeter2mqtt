@@ -13,4 +13,10 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'airbnb-typescript/base',
   ],
+  rules:{
+    "@typescript-eslint/no-explicit-any":"off",
+    "class-methods-use-this":"off",
+    "max-len":"off",
+    "no-console": "off",
+  }
 };

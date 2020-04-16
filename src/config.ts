@@ -36,11 +36,9 @@ export interface Config {
 }
 
 export class ConfigLoader {
-  private constructor() {}
-
   public static Load(): Config {
     const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json')).toString());
-    const args = require('yargs')
+    const args = yargs
       .env('SMARTMETER')
       .usage(`${pkg.name} ${pkg.version}\n${pkg.description
       }\n\nRead from P1 to USB serial:\n$0 --port /dev/ttyUSB0 [options]`
@@ -95,7 +93,7 @@ export class ConfigLoader {
       config.outputs.jsonSocket = args['tcp-server'];
     }
 
-    if (args['mqtt-url']) {
+    if (typeof args['mqtt-url'] === 'string') {
       config.outputs.mqtt = {
         discovery: args['mqtt-discovery'] === true,
         discoveryPrefix: args['mqtt-discovery-prefix'] ?? 'homeassistant',
@@ -106,7 +104,7 @@ export class ConfigLoader {
       };
     }
 
-    if (args['post-url']) {
+    if (typeof args['post-url'] === 'string') {
       config.outputs.post = {
         fields: 'powerTs,totalT1Use,totalT1Delivered,totalT2Use,totalT1Delivered,gas_totalUse,gas_ts', // Make configurable
         interval: args['post-interval'],

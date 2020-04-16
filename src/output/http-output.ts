@@ -2,21 +2,23 @@ import fetch, { Response } from 'node-fetch';
 import { URLSearchParams } from 'url';
 
 import { HttpPostConfig } from '../config';
-import { IntervalOutput } from './interval-output';
+import IntervalOutput from './interval-output';
 import P1Reader from '../p1-reader';
 import P1ReaderEvents from '../p1-reader-events';
+import DsmrMessage from '../dsmr-message';
+import { GasValue } from '../gas-value';
 
-export class HttpOutput extends IntervalOutput {
+export default class HttpOutput extends IntervalOutput {
   private fields?: Array<string>;
 
   constructor(private config: HttpPostConfig) {
     super(config.interval);
   }
 
-  start(p1Reader: P1Reader) {
+  start(p1Reader: P1Reader): void {
     super.start(p1Reader);
     this.fields = this.config.fields.split(',');
-    this.on(P1ReaderEvents.ParsedResult, (data) => this._sendEvent(data)
+    this.on(P1ReaderEvents.ParsedResult, (data) => this.sendEvent(data)
       .then((result) => {
         if (!result.ok) {
           throw new Error(result.statusText);
@@ -28,11 +30,10 @@ export class HttpOutput extends IntervalOutput {
   }
 
 
-  _sendEvent(data: any): Promise<Response> {
-    let flatData = HttpOutput.flatten(data);
-    if (this.fields) {
-      flatData = this._filterData(flatData);
-    }
+  private sendEvent(data: DsmrMessage): Promise<Response> {
+    const flatData = this.fields
+      ? this.filterData(HttpOutput.flatten(data))
+      : HttpOutput.flatten(data);
 
     if (this.config.json) {
       return fetch(this.config.url, {
@@ -43,15 +44,15 @@ export class HttpOutput extends IntervalOutput {
     }
     return fetch(this.config.url, {
       method: 'post',
-      body: new URLSearchParams(flatData),
+      body: new URLSearchParams(flatData as any),
     });
   }
 
-  _filterData(data: any): any {
+  private filterData(data: DsmrMessage): {[key: string]: string | number | Array<string> | GasValue | boolean | undefined} {
     if (this.fields === undefined) {
       return data;
     }
-    const result: {[key: string]: any} = {};
+    const result: {[key: string]: string | number | Array<string> | GasValue | boolean | undefined} = {};
     const { fields } = this;
     Object.keys(data)
       .filter((key) => fields.includes(key))
@@ -61,11 +62,13 @@ export class HttpOutput extends IntervalOutput {
     return result;
   }
 
-  private static flatten(data: any) {
+  private static flatten(data: DsmrMessage): DsmrMessage {
     if (data.gas) {
-      data.gas_ts = data.gas.ts;
-      data.gas_totalUse = data.gas.totalUse;
-      delete data.gas;
+      const result = data;
+      result.gas_ts = data.gas.ts;
+      result.gas_totalUse = data.gas.totalUse;
+      delete result.gas;
+      return result;
     }
     return data;
   }

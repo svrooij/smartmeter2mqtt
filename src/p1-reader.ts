@@ -54,7 +54,7 @@ export default class P1Reader extends EventEmitter {
       });
     });
 
-    this.socket.on('close', (hasError) => {
+    this.socket.on('close', () => {
       console.warn('Socket connection closed');
       process.exit(10);
     });
@@ -76,7 +76,7 @@ export default class P1Reader extends EventEmitter {
     }
   }
 
-  handleEnd() {
+  handleEnd(): void {
     if (this.parser === undefined) {
       throw new Error('Parser not running');
     }
@@ -104,8 +104,8 @@ export default class P1Reader extends EventEmitter {
     }
   }
 
-  close() {
-    return new Promise((resolve, reject) => {
+  close(): Promise<void> {
+    return new Promise((resolve) => {
       this.reading = false;
       if (this.serialPort) {
         this.serialPort.close(resolve);

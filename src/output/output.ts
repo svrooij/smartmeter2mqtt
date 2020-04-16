@@ -3,9 +3,10 @@ import P1Reader from '../p1-reader';
 /**
  * Base Output class, extend this class to create a new output.
  */
-export class Output extends EventEmitter {
+export default abstract class Output extends EventEmitter {
   /**
-   * You can override the constructor, but this makes sure you can never create a new instance of 'Output'
+   * You can override the constructor,
+   * but this makes sure you can never create a new instance of 'Output'
    */
   constructor() {
     super();
@@ -18,14 +19,10 @@ export class Output extends EventEmitter {
    * start is the entry point of any new output.
    * @param {P1Reader} p1Reader This will be the instance of the P1Reader, use it to listen for events.
    */
-  public start(p1Reader: P1Reader) {
-    throw new Error('Method start(p1Reader) should be implemented');
-  }
+  abstract start(p1Reader: P1Reader): void;
 
   /**
    * close is where you would close your output, it needed.
    */
-  async close() { }
+  abstract async close(): Promise<void>;
 }
-
-module.exports = Output;

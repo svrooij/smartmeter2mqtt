@@ -8,8 +8,6 @@ interface P1MapItem {
 }
 
 export default class P1Map {
-  private constructor() {}
-
   public static parseLine(line: string): DataPoint | undefined {
     if (line && line.length > 0) {
       const identifier = line.substr(0, line.indexOf('('));
@@ -80,7 +78,7 @@ export default class P1Map {
     return undefined;
   }
 
-  private static readonly mapping: Array<P1MapItem> = [
+  static readonly mapping: Array<P1MapItem> = [
     { id: '1-3:0.2.8', name: 'p1Version', valueRetriever: P1Map.getFirstString },
     { id: '0-0:1.0.0', name: 'powerTs', valueRetriever: P1Map.parseFirstTimestamp },
     { id: '0-0:96.1.1', name: 'powerSn', valueRetriever: P1Map.getFirstString },

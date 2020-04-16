@@ -3,13 +3,13 @@ import P1Map from './p1-map';
 import DsmrMessage from './dsmr-message';
 
 export default class P1Parser {
-  private _message: string;
+  private currentMessage: string;
 
-  private _data: DsmrMessage;
+  private partialData: DsmrMessage;
 
   public constructor() {
-    this._message = '';
-    this._data = {
+    this.currentMessage = '';
+    this.partialData = {
       crc: false,
     };
   }
@@ -25,27 +25,27 @@ export default class P1Parser {
     const isEnd = P1Parser.isEnd(line);
     if (line.length > 0) {
       if (!isEnd) {
-        this._message += `${line}\r\n`; // Append line to compute CRC
+        this.currentMessage += `${line}\r\n`; // Append line to compute CRC
       }
 
       if (P1Parser.isStart(line)) {
-        this._data.header = line.substr(1);
-        this._message += '\r\n';
+        this.partialData.header = line.substr(1);
+        this.currentMessage += '\r\n';
       } else if (isEnd) {
         // Always to crc check, it can fail, we still want te result.
-        const calculatedCrc = crc16(`${this._message}!`).toString(16).toUpperCase();
+        const calculatedCrc = crc16(`${this.currentMessage}!`).toString(16).toUpperCase();
         // console.log('Calculated CRC %s line: %s', calculatedCrc, line)
-        this._data.crc = calculatedCrc === line.substr(1);
+        this.partialData.crc = calculatedCrc === line.substr(1);
 
-        this._message += `${line}\r\n`;
+        this.currentMessage += `${line}\r\n`;
         return true;
       } else {
         const parsed = P1Map.parseLine(line);
         if (parsed && parsed.name) {
           if (parsed.value !== undefined) {
-            this._data[parsed.name] = parsed.value;
+            this.partialData[parsed.name] = parsed.value;
           } else if (parsed.rawValues !== undefined) {
-            this._data[parsed.name] = parsed.rawValues;
+            this.partialData[parsed.name] = parsed.rawValues;
           }
         }
       }
@@ -54,11 +54,11 @@ export default class P1Parser {
   }
 
   public get data(): DsmrMessage {
-    return this._data;
+    return this.partialData;
   }
 
   public get message(): string {
-    return this._message;
+    return this.currentMessage;
   }
 
   // Statics

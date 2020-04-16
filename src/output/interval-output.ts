@@ -1,8 +1,8 @@
 import P1Reader from '../p1-reader';
-import { Output } from './output';
+import Output from './output';
 import P1ReaderEvents from '../p1-reader-events';
 
-export class IntervalOutput extends Output {
+export default class IntervalOutput extends Output {
   private timer?: NodeJS.Timeout;
 
   private publishNextEvent: boolean;
@@ -15,7 +15,7 @@ export class IntervalOutput extends Output {
     this.interval = interval ?? 60;
   }
 
-  start(p1Reader: P1Reader) {
+  start(p1Reader: P1Reader): void {
     if (p1Reader === undefined) throw new Error('p1Reader is undefined!');
 
 
@@ -26,7 +26,7 @@ export class IntervalOutput extends Output {
       }
     });
     p1Reader.on(P1ReaderEvents.UsageChanged, (result) => {
-      this.emit(P1ReaderEvents.UsageChanged);
+      this.emit(P1ReaderEvents.UsageChanged, result);
     });
 
     this.timer = setInterval(() => {

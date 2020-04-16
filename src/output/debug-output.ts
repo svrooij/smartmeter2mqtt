@@ -1,12 +1,13 @@
 import P1Reader from '../p1-reader';
-import { Output } from './output';
+import Output from './output';
 import P1ReaderEvents from '../p1-reader-events';
 
 
 /**
  * DebugOutput is a sample output.
  * You'll have to at least implement the 'start(p1Reader)' method.
- * It will receive the P1Reader and in the start method, you can start listening to events from the reader.
+ * It will receive the P1Reader and in the start method,
+ * you can start listening to events from the reader.
  * You should also implement the 'stop()' method to stop any started server.
  */
 export default class DebugOutput extends Output {
@@ -22,8 +23,9 @@ export default class DebugOutput extends Output {
     });
   }
 
-  stop() {
+  close(): Promise<void> {
     console.log('Stop all servers from this output here.');
+    return Promise.resolve();
   }
 }
 

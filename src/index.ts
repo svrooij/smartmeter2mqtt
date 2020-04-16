@@ -2,12 +2,12 @@
 
 import P1Reader from './p1-reader';
 import { ConfigLoader } from './config';
-import { Output } from './output/output';
-import { WebServer } from './output/web-server';
-import { TcpOutput } from './output/tcp-output';
-import { MqttOutput } from './output/mqtt-output';
-import { HttpOutput } from './output/http-output';
-import { DebugOutput } from './output/debug-output';
+import Output from './output/output';
+import WebServer from './output/web-server';
+import TcpOutput from './output/tcp-output';
+import MqttOutput from './output/mqtt-output';
+import HttpOutput from './output/http-output';
+import DebugOutput from './output/debug-output';
 
 class Smartmeter {
   private reader: P1Reader;
@@ -25,7 +25,7 @@ class Smartmeter {
     console.log('----------------------------------------');
   }
 
-  start() {
+  start(): void {
     if (this.config.serialPort && this.config.serialPort.length > 0) {
       console.log('- Read serial port %s', this.config.serialPort);
       this.reader.startWithSerialPort(this.config.serialPort);
@@ -36,15 +36,15 @@ class Smartmeter {
         process.exit(3);
       }
       console.log('- Read from socket %s', this.config.socket);
-      this.reader.startWithSocket(parts[0], parseInt(parts[1]));
+      this.reader.startWithSocket(parts[0], parseInt(parts[1], 10));
     } else {
       console.warn('Port or socket required');
       process.exit(2);
     }
-    this._startOutputs();
+    this.startOutputs();
   }
 
-  async stop() {
+  async stop(): Promise<void> {
     await Promise.all(this.outputs.map((output) => output.close())).catch((err) => {
       console.warn(err);
     });
@@ -52,7 +52,7 @@ class Smartmeter {
     process.exit();
   }
 
-  _startOutputs() {
+  private startOutputs(): void {
     if (this.config.outputs.debug) {
       console.log('- Output: debug');
       this.outputs.push(new DebugOutput());

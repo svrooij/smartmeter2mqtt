@@ -1,14 +1,14 @@
 import http, { Server } from 'http';
 import WebSocket from 'ws';
 import path from 'path';
-import { Output } from './output';
+import Output from './output';
 import P1ReaderEvents from '../p1-reader-events';
 import P1Reader from '../p1-reader';
 import DsmrMessage from '../dsmr-message';
 
 import express = require('express');
 
-export class WebServer extends Output {
+export default class WebServer extends Output {
   private server?: Server;
 
   private wsServer?: WebSocket.Server;
@@ -21,18 +21,18 @@ export class WebServer extends Output {
     super();
   }
 
-  start(p1Reader: P1Reader) {
+  start(p1Reader: P1Reader): void {
     if (p1Reader === undefined) throw new Error('p1Reader is undefined!');
 
     p1Reader.on(P1ReaderEvents.ParsedResult, (data) => {
-      this._setReading(data);
+      this.setReading(data);
     });
-    if (this.startServer === false) {
-      this._start();
+    if (this.startServer === true) {
+      this.startWebserver();
     }
   }
 
-  _start(startSockets = true) {
+  private startWebserver(startSockets = true): void {
     const app = express();
 
     this.server = http.createServer(app);
@@ -50,14 +50,14 @@ export class WebServer extends Output {
         }
       });
     }
-    app.get('/api/reading', (req, res) => this._getReading(req, res));
+    app.get('/api/reading', (req, res) => this.getReading(req, res));
     app.use(express.static(path.join(__dirname, 'wwwroot'), { index: 'index.html' }));
     this.server.listen(this.port);
-    this.checkTimeout = setInterval(() => { this._checkSockets(); }, 10000);
+    this.checkTimeout = setInterval(() => { this.checkSockets(); }, 10000);
   }
 
   close(): Promise<void> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       if (this.checkTimeout) clearInterval(this.checkTimeout);
       this.server?.close(() => {
         resolve();
@@ -65,7 +65,7 @@ export class WebServer extends Output {
     });
   }
 
-  _getReading(req: any, res: any): void {
+  private getReading(req: any, res: any): void {
     if (this.lastReading) {
       res.json(this.lastReading);
     } else {
@@ -73,12 +73,12 @@ export class WebServer extends Output {
     }
   }
 
-  _setReading(newReading: DsmrMessage) {
+  private setReading(newReading: DsmrMessage): void {
     this.lastReading = newReading;
-    this._broadcastMessage(newReading);
+    this.broadcastMessage(newReading);
   }
 
-  _checkSockets(): void {
+  private checkSockets(): void {
     // this._sockets.clients.forEach(client => {
     //   if (!client.isAlive) return client.terminate()
     //   client.isAlive = false
@@ -86,7 +86,7 @@ export class WebServer extends Output {
     // })
   }
 
-  _broadcastMessage(msg: DsmrMessage) {
+  private broadcastMessage(msg: DsmrMessage): void {
     if (this.wsServer) {
       const readingString = JSON.stringify(msg);
       this.wsServer.clients.forEach((client) => {
@@ -95,5 +95,3 @@ export class WebServer extends Output {
     }
   }
 }
-
-module.exports = WebServer;
