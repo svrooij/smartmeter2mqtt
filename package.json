@@ -5,11 +5,12 @@
   "main": "dist/index.js",
   "scripts": {
     "compile": "tsc",
+    "copy-www": "cp -r ./src/output/wwwroot ./dist/output/wwwroot",
     "coverage": "jest --coverage --force-exit",
     "lint": "eslint ./src --ext .js,.jsx,.ts,.tsx",
     "lint-fix": "eslint ./src --ext .js,.jsx,.ts,.tsx --fix",
     "test": "npm run lint && jest",
-    "prepare": "npm run compile",
+    "prepack": "npm run compile && npm run copy-www",
     "semantic-release": "semantic-release"
   },
   "repository": {
@@ -66,7 +67,6 @@
     "LICENSE",
     "README.md",
     "package.json",
-    "index.js",
-    "lib"
+    "dist"
   ]
 }

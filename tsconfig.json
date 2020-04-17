@@ -66,4 +66,7 @@
   "include": [
     "./src/**/*"
   ],
+  "exclude": [
+    "./src/output/wwwroot/**"
+  ]
 }
