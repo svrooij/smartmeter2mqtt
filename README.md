@@ -1,10 +1,10 @@
 # Smartmeter2mqtt
 
 [![npm](https://img.shields.io/npm/v/smartmeter2mqtt.svg?style=flat-square)](https://www.npmjs.com/package/smartmeter2mqtt)
+[![docker pulls][badge_docker]][link_docker]
+[![Support me on Github][badge_sponsor]][link_sponsor]
 [![travis](https://img.shields.io/travis/svrooij/smartmeter2mqtt.svg?style=flat-square)](https://travis-ci.org/svrooij/smartmeter2mqtt)
 [![mqtt-smarthome](https://img.shields.io/badge/mqtt-smarthome-blue.svg?style=flat-square)](https://github.com/mqtt-smarthome/mqtt-smarthome)
-[![Support me on Github][badge_sponsor]][link_sponsor]
-[![PayPal][badge_paypal_donate]][paypal-donations]
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg?style=flat-square)](https://github.com/semantic-release/semantic-release)
 
 This application can listen to your (Dutch) Smartmeter with a P1 connector, and send the data to several outputs. Currently supporting the following methods:
@@ -80,7 +80,7 @@ You can set every setting with an environment variable prefixed with `SMARTMETER
 
 ## Usage
 
-```bash
+```Bash
 smartmeter2mqtt 0.0.0-development
 Publish data from your Smartmeter with a P1 interface to your MQTT server.
 
@@ -145,7 +145,7 @@ This webpage uses WebSockets for automatic server side data refresh. So the brow
 This output creates a tcp socket where you will receive a newline delimeted json stream, to be used in your other applications.
 Start it with the `--tcp-server [portnumer]` parameter. You can then see immediate result when you connect too it with for instance telnet `telnet [ip-of-server] [specified-port]`. Maximum 3 connections.
 
-```plain
+```Bash
 > telnet 192.168.1.20 3010
 Trying 192.168.1.20...
 Connected to black-pearl.localdomain.
@@ -268,29 +268,47 @@ This section is for the curious ones.
 
 ### Support for output X
 
-This package comes with several outputs, they all extend [Output](https://github.com/svrooij/smartmeter2mqtt/blob/master/lib/output/output.js). Every new output should implement the `start(p1Reader, options)` method. They all get the instance of the current [P1Reader](https://github.com/svrooij/smartmeter2mqtt/blob/master/lib/p1-reader.js). So your new output should subscribe to one of the events. All events are defined in [P1ReaderEvents](https://github.com/svrooij/smartmeter2mqtt/blob/master/lib/p1-reader-events.js) and you should use the statics from the class, (even though they are just strings).
+This package comes with several outputs, they all extend [Output](https://github.com/svrooij/smartmeter2mqtt/blob/master/src/output/output.ts).
+Every new output should implement the `start(p1Reader: P1Reader): void` and the `close():Promise<void>` methods.
+They all get the instance of the current [P1Reader](https://github.com/svrooij/smartmeter2mqtt/blob/master/src/p1-reader.ts).
+So your new output should subscribe to one of the events.
+All events are defined in [P1ReaderEvents](https://github.com/svrooij/smartmeter2mqtt/blob/master/src/p1-reader-events.ts) and you should use the statics from the class, (even though they are just strings).
 
 - **P1ReaderEvents.ParsedResult** to get the parsed result (if crc check validates), probably the one you want.
 - **P1ReaderEvents.UsageChange** to get the changes in current usage. Already computed you dont have to.
 - **P1ReaderEvents.Line** to get every line when they come in.
 - **P1ReaderEvents.Raw** to get every raw message. Is transmitted as a complete string when the endline is received.
 
-If you start some kind of server, be sure to also implemend the `close()` method.
+If you start some kind of server, be sure to stop it in the `close()` method.
 
-Every output is wired to the input in the [index.js](https://github.com/svrooij/smartmeter2mqtt/blob/master/index.js) file in the `_startOutputs()` method. Just check how it works.
+Every output is wired to the input in the [index.ts](https://github.com/svrooij/smartmeter2mqtt/blob/master/src/index.ts) file in the `startOutputs()` method.
+You initialize the correct output and push it to the `this.outputs` array. The `start` and `close` methods are called automaticcaly.
+
+Configuration is done in the [config.ts](https://github.com/svrooij/smartmeter2mqtt/blob/master/src/config.ts) file.
+Depending on your output you might want to create a single config entry to enable it or a nested configuration like for mqtt.
+This class is also responsible for parsing the input and converting it to the strong-typed config.
 
 ```JavaScript
-const YourOutput = require('./lib/output/your-output')
-let yourOutput = new YourOutput()
-yourOutput.start(this._reader, { option1: true, options2: false })
-this.outputs.push(yourOutput)
+if (this.config.outputs.mqtt) {
+  console.log('- Output: Mqtt to %s', this.config.outputs.mqtt.url);
+  this.outputs.push(new MqttOutput(this.config.outputs.mqtt));
+}
 ```
 
 Your output will get an event every 10 seconds, if you only want daily results you will need to build some logic to skip events.
 
 ### Run tests before PR
 
-This library enforces [Javascript Standard Style](https://standardjs.com/) on every build. In the [tests](./tests) folder are several tests defined. So we don't break any existing code. Both the javascript styles and the tests can be run with `npm run test` in the main folder.
+This library enforces these eslint rules (with some exceptions that will be removed soon):
+
+- `eslint:recommended`
+- `plugin:@typescript-eslint/eslint-recommended`
+- `plugin:@typescript-eslint/recommended`
+- `airbnb-typescript/base`
+
+In the [tests](./tests) folder are several tests defined.
+So we don't break any existing code.
+Both the javascript styles and the tests can be run with `npm run test` in the main folder.
 
 ### Build docker image
 
@@ -309,7 +327,7 @@ docker build -t svrooij/smartmeter:alpha .
 
 My Keifa meter outputs the following data as you connect to the serial connection. Other meters should be supported as well. Else please start with `--debug` and send one full output to us.
 
-```text
+```plain
 /KFM5KAIFA-METER            // Header, Manufacturer specific
 
 1-3:0.2.8(42)               // Version information P1 output
@@ -340,11 +358,14 @@ My Keifa meter outputs the following data as you connect to the serial connectio
 
 ### Parsing messages explained
 
-The [p1-reader](https://github.com/svrooij/smartmeter2mqtt/blob/master/lib/p1-reader.js) is responsible for connecting to one of the sources, it is an eventemitter that outputs the following events `line`, `dsmr`, `raw`, `usageChange`. It will send each line to the [p1-parser](https://github.com/svrooij/smartmeter2mqtt/blob/master/lib/p1-parser.js) for parsing and checking the message. To support extra data, you'll need to take a look at the [p1-map](https://github.com/svrooij/smartmeter2mqtt/blob/master/lib/p1-map.js) file, it contains the **id** used in the DSMR standard, the name in the result object and a **valueRetriever**. The **valueRetriever** is passed an array of values that where between brackets in the current line.
+The [p1-reader](https://github.com/svrooij/smartmeter2mqtt/blob/master/src/p1-reader.ts) is responsible for connecting to one of the sources, it is an eventemitter that outputs the following events `line`, `dsmr`, `raw`, `usageChange`.
+It will send each line to the [p1-parser](https://github.com/svrooij/smartmeter2mqtt/blob/master/src/p1-parser.ts) for parsing and checking the message.
+To support extra data, you'll need to take a look at the [p1-map](https://github.com/svrooij/smartmeter2mqtt/blob/master/src/p1-map.ts) file, it contains the **id** used in the DSMR standard, the name in the result object and a **valueRetriever**.
+The **valueRetriever** is passed an array of values that where between brackets in the current line.
 
 Supporting other data fields is just a matter of changing the **p1-map** file.
 
-[badge_paypal_donate]: https://svrooij.nl/badges/paypal_donate.svg
-[paypal-donations]: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=T9XFJYUSPE4SG
+[badge_docker]: https://img.shields.io/docker/pulls/svrooij/smartmeter
 [badge_sponsor]: https://img.shields.io/badge/Sponsor-on%20Github-red
 [link_sponsor]: https://github.com/sponsors/svrooij
+[link_docker]: https://hub.docker.com/r/svrooij/smartmeter

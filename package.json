@@ -2,12 +2,15 @@
   "name": "smartmeter2mqtt",
   "version": "0.0.0-development",
   "description": "Publish data from your Smartmeter with a P1 interface to your MQTT server.",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "standard && npm run parser-test",
-    "parser-test": "mocha tests/*-tests.js",
-    "lint": "standard",
-    "lint-fix": "standard --fix",
+    "compile": "tsc",
+    "copy-www": "cp -r ./src/output/wwwroot ./dist/output/wwwroot",
+    "coverage": "jest --coverage",
+    "lint": "eslint ./src --ext .js,.jsx,.ts,.tsx",
+    "lint-fix": "eslint ./src --ext .js,.jsx,.ts,.tsx --fix",
+    "test": "npm run lint && jest",
+    "prepack": "npm run compile && npm run copy-www",
     "semantic-release": "semantic-release"
   },
   "repository": {
@@ -39,25 +42,31 @@
     "yargs": "^15.3.1"
   },
   "devDependencies": {
-    "assert": "^2.0.0",
+    "@types/chai": "^4.2.11",
+    "@types/crc": "^3.4.0",
+    "@types/express": "^4.17.6",
+    "@types/jest": "^25.2.1",
+    "@types/node-fetch": "^2.5.6",
+    "@types/serialport": "^8.0.0",
+    "@types/ws": "^7.2.4",
+    "@types/yargs": "^15.0.4",
+    "@typescript-eslint/eslint-plugin": "^2.28.0",
+    "chai": "^4.2.0",
     "eslint": "^6.8.0",
-    "eslint-config-standard": "^14.1.1",
+    "eslint-config-airbnb-typescript": "^7.2.1",
     "eslint-plugin-import": "^2.20.2",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.1",
-    "mocha": "^6.2.1",
-    "standard": "^14.3.3",
-    "semantic-release": "^17.0.4"
+    "jest": "^25.3.0",
+    "semantic-release": "^17.0.4",
+    "ts-jest": "^25.3.1",
+    "typescript": "^3.8.3"
   },
   "bin": {
-    "smartmeter2mqtt": "./index.js"
+    "smartmeter2mqtt": "./dist/index.js"
   },
   "files": [
     "LICENSE",
     "README.md",
     "package.json",
-    "index.js",
-    "lib"
+    "dist"
   ]
 }
