@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 import P1Reader from '../p1-reader';
+
 /**
  * Base Output class, extend this class to create a new output.
  */

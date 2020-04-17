@@ -1,8 +1,6 @@
 import mqtt, { MqttClient, IClientOptions } from 'mqtt';
 import Output from './output';
 import P1ReaderEvents from '../p1-reader-events';
-
-
 import { MqttConfig } from '../config';
 import P1Reader from '../p1-reader';
 import DsmrMessage from '../dsmr-message';

@@ -1,10 +1,10 @@
 # Smartmeter2mqtt
 
 [![npm](https://img.shields.io/npm/v/smartmeter2mqtt.svg?style=flat-square)](https://www.npmjs.com/package/smartmeter2mqtt)
+[![docker pulls][badge_docker]][link_docker]
+[![Support me on Github][badge_sponsor]][link_sponsor]
 [![travis](https://img.shields.io/travis/svrooij/smartmeter2mqtt.svg?style=flat-square)](https://travis-ci.org/svrooij/smartmeter2mqtt)
 [![mqtt-smarthome](https://img.shields.io/badge/mqtt-smarthome-blue.svg?style=flat-square)](https://github.com/mqtt-smarthome/mqtt-smarthome)
-[![Support me on Github][badge_sponsor]][link_sponsor]
-[![PayPal][badge_paypal_donate]][paypal-donations]
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg?style=flat-square)](https://github.com/semantic-release/semantic-release)
 
 This application can listen to your (Dutch) Smartmeter with a P1 connector, and send the data to several outputs. Currently supporting the following methods:
@@ -360,12 +360,12 @@ My Keifa meter outputs the following data as you connect to the serial connectio
 
 The [p1-reader](https://github.com/svrooij/smartmeter2mqtt/blob/master/src/p1-reader.ts) is responsible for connecting to one of the sources, it is an eventemitter that outputs the following events `line`, `dsmr`, `raw`, `usageChange`.
 It will send each line to the [p1-parser](https://github.com/svrooij/smartmeter2mqtt/blob/master/src/p1-parser.ts) for parsing and checking the message.
-To support extra data, you'll need to take a look at the [p1-map](https://github.com/svrooij/smartmeter2mqtt/blob/master/src/p1-map.js) file, it contains the **id** used in the DSMR standard, the name in the result object and a **valueRetriever**.
+To support extra data, you'll need to take a look at the [p1-map](https://github.com/svrooij/smartmeter2mqtt/blob/master/src/p1-map.ts) file, it contains the **id** used in the DSMR standard, the name in the result object and a **valueRetriever**.
 The **valueRetriever** is passed an array of values that where between brackets in the current line.
 
 Supporting other data fields is just a matter of changing the **p1-map** file.
 
-[badge_paypal_donate]: https://svrooij.nl/badges/paypal_donate.svg
-[paypal-donations]: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=T9XFJYUSPE4SG
+[badge_docker]: https://img.shields.io/docker/pulls/svrooij/smartmeter
 [badge_sponsor]: https://img.shields.io/badge/Sponsor-on%20Github-red
 [link_sponsor]: https://github.com/sponsors/svrooij
+[link_docker]: https://hub.docker.com/r/svrooij/smartmeter

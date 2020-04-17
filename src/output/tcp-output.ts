@@ -42,5 +42,3 @@ export default class TcpOutput extends Output {
     return Promise.resolve();
   }
 }
-
-module.exports = TcpOutput;

@@ -1,4 +1,4 @@
-import { GasValue } from './gas-value';
+import GasValue from './gas-value';
 
 export default interface DataPoint {
   id: string;

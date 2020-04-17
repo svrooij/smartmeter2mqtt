@@ -1,4 +1,4 @@
-export interface GasValue {
+export default interface GasValue {
   ts?: string;
   totalUse?: number;
 }

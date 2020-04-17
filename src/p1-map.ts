@@ -1,4 +1,4 @@
-import { GasValue } from './gas-value';
+import GasValue from './gas-value';
 import DataPoint from './datapoint';
 
 interface P1MapItem {

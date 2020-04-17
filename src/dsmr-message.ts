@@ -1,5 +1,11 @@
-import { GasValue } from './gas-value';
+import GasValue from './gas-value';
 
+/**
+ * Properties in this base class are used by some outputs.
+ * By defining them here we set the type instead of all possible types.
+ *
+ * @interface DsmrMessageBase
+ */
 interface DsmrMessageBase {
   /**
    * CRC checks out in message
@@ -87,6 +93,13 @@ interface DsmrMessageBase {
   totalT2Use?: number;
 }
 
+/**
+ * The DsmrMessage allows for extending the result without the need to change the class (or the base)
+ *
+ * @export
+ * @interface DsmrMessage
+ * @extends {DsmrMessageBase}
+ */
 export default interface DsmrMessage extends DsmrMessageBase {
 
   [key: string]: string | number | Array<string> | GasValue | boolean | undefined;

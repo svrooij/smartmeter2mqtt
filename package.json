@@ -6,7 +6,7 @@
   "scripts": {
     "compile": "tsc",
     "copy-www": "cp -r ./src/output/wwwroot ./dist/output/wwwroot",
-    "coverage": "jest --coverage --force-exit",
+    "coverage": "jest --coverage",
     "lint": "eslint ./src --ext .js,.jsx,.ts,.tsx",
     "lint-fix": "eslint ./src --ext .js,.jsx,.ts,.tsx --fix",
     "test": "npm run lint && jest",

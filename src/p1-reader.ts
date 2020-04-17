@@ -120,5 +120,3 @@ export default class P1Reader extends EventEmitter {
     });
   }
 }
-
-module.exports = P1Reader;

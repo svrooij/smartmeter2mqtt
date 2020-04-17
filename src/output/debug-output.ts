@@ -24,9 +24,7 @@ export default class DebugOutput extends Output {
   }
 
   close(): Promise<void> {
-    console.log('Stop all servers from this output here.');
+    // You should stop the started servers here, when building your own output.
     return Promise.resolve();
   }
 }
-
-module.exports = DebugOutput;

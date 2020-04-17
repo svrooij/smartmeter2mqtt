@@ -1,12 +1,11 @@
 import fetch, { Response } from 'node-fetch';
 import { URLSearchParams } from 'url';
-
 import { HttpPostConfig } from '../config';
 import IntervalOutput from './interval-output';
 import P1Reader from '../p1-reader';
 import P1ReaderEvents from '../p1-reader-events';
 import DsmrMessage from '../dsmr-message';
-import { GasValue } from '../gas-value';
+import GasValue from '../gas-value';
 
 export default class HttpOutput extends IntervalOutput {
   private fields?: Array<string>;
@@ -28,7 +27,6 @@ export default class HttpOutput extends IntervalOutput {
         this.emit(P1ReaderEvents.ErrorMessage, err);
       }));
   }
-
 
   private sendEvent(data: DsmrMessage): Promise<Response> {
     const flatData = this.fields

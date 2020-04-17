@@ -75,7 +75,6 @@ class Smartmeter {
 
     if (this.config.outputs.rawSocket) {
       console.log(`- Output: Raw TCP socket on port ${this.config.outputs.rawSocket}`);
-
       this.outputs.push(new TcpOutput(this.config.outputs.rawSocket, true, true));
     }
 
