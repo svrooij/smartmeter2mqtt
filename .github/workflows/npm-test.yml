@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - master
+      - development
   pull_request:
 
 jobs:
@@ -17,6 +18,11 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12
-      - run: npm ci
-      - run: npm test
-      - run: npm run coverage
+      - name: Install depencencies
+        run: npm ci
+      - name: Run tests
+        run: npm test
+      - name: Send data to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
