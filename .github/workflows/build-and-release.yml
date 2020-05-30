@@ -38,7 +38,9 @@ jobs:
         if: steps.semantic.outputs.new_release_published == 'true'
         uses: crazy-max/ghaction-docker-buildx@v2
         with:
-          version: latest
+          buildx-version: latest
+          skip-cache: false
+          qemu-version: latest
       - name: Login to docker
         if: steps.semantic.outputs.new_release_published == 'true'
         run:
@@ -55,7 +57,7 @@ jobs:
             --build-arg BUILD_VERSION=${{ steps.semantic.outputs.new_release_version }} \
             --build-arg VSC_REF=$(echo ${GITHUB_SHA} | cut -c1-8) \
             .
-      - name: Publish to docker with buildx as latest
+      - name: Publish to docker with buildx as beta
         if: steps.semantic.outputs.new_release_published == 'true' && github.ref != 'refs/heads/master'
         run: |
           docker buildx build \
