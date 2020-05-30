@@ -4,6 +4,7 @@
 [![docker pulls][badge_docker]][link_docker]
 [![Support me on Github][badge_sponsor]][link_sponsor]
 [![Run build and publish][badge_build]][link_build]
+[![Coverage Status][badge_coveralls]][link_coveralls]
 [![mqtt-smarthome](https://img.shields.io/badge/mqtt-smarthome-blue.svg?style=flat-square)](https://github.com/mqtt-smarthome/mqtt-smarthome)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg?style=flat-square)](https://github.com/semantic-release/semantic-release)
 
@@ -379,7 +380,9 @@ Supporting other data fields is just a matter of changing the **p1-map** file.
 [badge_docker]: https://img.shields.io/docker/pulls/svrooij/smartmeter
 [badge_sponsor]: https://img.shields.io/badge/Sponsor-on%20Github-red
 [badge_build]: https://github.com/svrooij/smartmeter2mqtt/workflows/Run%20tests%20and%20publish/badge.svg
+[badge_coveralls]: https://coveralls.io/repos/github/svrooij/smartmeter2mqtt/badge.svg?branch=master
 
 [link_build]: https://github.com/svrooij/smartmeter2mqtt/actions
+[link_coveralls]: https://coveralls.io/github/svrooij/smartmeter2mqtt?branch=master
 [link_sponsor]: https://github.com/sponsors/svrooij
 [link_docker]: https://hub.docker.com/r/svrooij/smartmeter
