@@ -43,13 +43,25 @@ jobs:
         if: steps.semantic.outputs.new_release_published == 'true'
         run:
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-      - name: Publish to docker with buildx
-        if: steps.semantic.outputs.new_release_published == 'true'
+      - name: Publish to docker with buildx as latest
+        if: steps.semantic.outputs.new_release_published == 'true' && github.ref == 'refs/heads/master'
         run: |
           docker buildx build \
             --platform linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64 \
             --push \
             -t svrooij/smartmeter:latest \
+            -t svrooij/smartmeter:${{ steps.semantic.outputs.new_release_version }} \
+            --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+            --build-arg BUILD_VERSION=${{ steps.semantic.outputs.new_release_version }} \
+            --build-arg VSC_REF=$(echo ${GITHUB_SHA} | cut -c1-8) \
+            .
+      - name: Publish to docker with buildx as latest
+        if: steps.semantic.outputs.new_release_published == 'true' && github.ref != 'refs/heads/master'
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64 \
+            --push \
+            -t svrooij/smartmeter:beta \
             -t svrooij/smartmeter:${{ steps.semantic.outputs.new_release_version }} \
             --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
             --build-arg BUILD_VERSION=${{ steps.semantic.outputs.new_release_version }} \
