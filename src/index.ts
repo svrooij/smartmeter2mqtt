@@ -8,6 +8,7 @@ import TcpOutput from './output/tcp-output';
 import MqttOutput from './output/mqtt-output';
 import HttpOutput from './output/http-output';
 import DebugOutput from './output/debug-output';
+import ModbusSolarInput from './modbus-solar-input';
 
 class Smartmeter {
   private reader: P1Reader;
@@ -42,7 +43,7 @@ class Smartmeter {
       process.exit(2);
     }
     if (this.config.solar) {
-      await this.reader.enableSubspec(this.config.solar.host, this.config.solar.port);
+      this.reader.addSolarInput(new ModbusSolarInput(this.config.solar.host, this.config.solar.port));
     }
     this.startOutputs();
   }

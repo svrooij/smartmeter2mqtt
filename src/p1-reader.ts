@@ -1,10 +1,10 @@
 import SerialPort from 'serialport';
 import { Socket } from 'net';
 import { EventEmitter } from 'events';
-import { SunspecReader } from '@svrooij/sunspec';
 import P1Parser from './p1-parser';
 import P1ReaderEvents from './p1-reader-events';
 import DsmrMessage from './dsmr-message';
+import SolarInput from './solar-input';
 
 export default class P1Reader extends EventEmitter {
   private usage: number;
@@ -26,7 +26,7 @@ export default class P1Reader extends EventEmitter {
   private parser?: P1Parser;
 
   // Inverter stuff
-  private sunspecReader?: SunspecReader;
+  private solarInput?: SolarInput;
 
   constructor() {
     super();
@@ -71,9 +71,8 @@ export default class P1Reader extends EventEmitter {
     this.parsing = true;
   }
 
-  public async enableSubspec(host: string, port: number): Promise<void> {
-    this.sunspecReader = new SunspecReader(host, port);
-    this.sunspecReader.readInverterInfo();
+  public addSolarInput(input: SolarInput): void {
+    this.solarInput = input;
   }
 
   private parseLine(line: string): void {
@@ -97,11 +96,11 @@ export default class P1Reader extends EventEmitter {
       this.emit(P1ReaderEvents.ErrorMessage, 'CRC failed');
       return;
     }
-    const solar = this.sunspecReader ? await this.sunspecReader.readData() : undefined;
+    const solar = this.solarInput ? await this.solarInput.getSolarData() : undefined;
     if (solar) {
       result.calculatedUsage = Math.round(((result.currentUsage || 0.0) - (result.currentDelivery || 0.0)) * 1000);
-      result.solarProduction = solar.acPower;
-      result.houseUsage = Math.round((solar.acPower ?? 0) + result.calculatedUsage);
+      result.solarProduction = await this.solarInput?.getCurrentProduction();
+      result.houseUsage = Math.round((result.solarProduction ?? 0) + result.calculatedUsage);
       this.emit(P1ReaderEvents.SolarResult, solar);
     } else {
       result.calculatedUsage = Math.round(((result.currentUsage || 0.0) - (result.currentDelivery || 0.0)) * 1000);
@@ -123,8 +122,8 @@ export default class P1Reader extends EventEmitter {
   }
 
   public close(): Promise<void> {
-    if (this.sunspecReader) {
-      this.sunspecReader = undefined;
+    if (this.solarInput) {
+      this.solarInput = undefined;
     }
     return new Promise((resolve) => {
       this.reading = false;
