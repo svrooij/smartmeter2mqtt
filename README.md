@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/smartmeter2mqtt.svg?style=flat-square)](https://www.npmjs.com/package/smartmeter2mqtt)
 [![docker pulls][badge_docker]][link_docker]
 [![Support me on Github][badge_sponsor]][link_sponsor]
-[![travis](https://img.shields.io/travis/svrooij/smartmeter2mqtt.svg?style=flat-square)](https://travis-ci.org/svrooij/smartmeter2mqtt)
+[![Run build and publish][badge_build]][link_build]
 [![mqtt-smarthome](https://img.shields.io/badge/mqtt-smarthome-blue.svg?style=flat-square)](https://github.com/mqtt-smarthome/mqtt-smarthome)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg?style=flat-square)](https://github.com/semantic-release/semantic-release)
 
@@ -66,6 +66,7 @@ services:
       - SMARTMETER_web-server=3000
       - SMARTMETER_tcp-server=3010
       - SMARTMETER_raw-tcp-server=3020
+      # - SMARTMETER_sunspec-modbus=192.168.x.x # if you want to also read your solar inverter.
 
 ```
 
@@ -109,6 +110,8 @@ Options:
   --tcp-server             Expose JSON TCP socket on this port          [number]
   --raw-tcp-server         Expose RAW TCP socket on this port           [number]
   --debug                  Enable debug output                         [boolean]
+  --sunspec-modbus         IP of solar inverter with modbus TCP enabled
+  --sunspec-modbus-port    modbus TCP port               [number] [default: 502]
   --version                Show version number                         [boolean]
   -h, --help               Show help                                   [boolean]
 
@@ -127,6 +130,12 @@ For a **direct connection** you'll need a Smartmeter cable like [this one at sos
 ### TCP socket
 
 You can also connect to a **TCP socket**, this way you don't need the device running this program to be on a device near your meter. You can also check out this [ESP8266 P1 reader](http://www.esp8266thingies.nl/wp/), it creates a TCP socket for your meter.
+
+### Solar panel inverter (optional)
+
+This library can also read current solar production from an inverter supporting **SunSpec**. We use [@svrooij/sunspec](https://github.com/svrooij/sunspec) for this, see other package for more info.
+
+By reading data from the solar panel as well, the properties `houseUsage` and `solarProduction` will become available. The first one is computed as follows `solarProduction + calculatedUsage` if you're producing 1000 watt and the calculatedUsage is -400 (delivering 400 watt), the houseUsage must be 600 watt.
 
 ## Outputs
 
@@ -235,7 +244,9 @@ Payload:
     "totalUse" : 2000
   },
   "crc" : true,
-  "calculatedUsage" : -1772
+  "calculatedUsage" : -1772,
+  "houseUsage": 400,
+  "solarProduction": 2172
 }
 ```
 
@@ -367,5 +378,8 @@ Supporting other data fields is just a matter of changing the **p1-map** file.
 
 [badge_docker]: https://img.shields.io/docker/pulls/svrooij/smartmeter
 [badge_sponsor]: https://img.shields.io/badge/Sponsor-on%20Github-red
+[badge_build]: https://github.com/svrooij/smartmeter2mqtt/workflows/Run%20tests%20and%20publish/badge.svg
+
+[link_build]: https://github.com/svrooij/smartmeter2mqtt/actions
 [link_sponsor]: https://github.com/sponsors/svrooij
 [link_docker]: https://hub.docker.com/r/svrooij/smartmeter

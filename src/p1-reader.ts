@@ -109,15 +109,16 @@ export default class P1Reader extends EventEmitter {
     this.lastResult = result;
     this.emit(P1ReaderEvents.ParsedResult, this.lastResult);
 
-    if (this.usage !== result.calculatedUsage) {
-      const relative = (result.calculatedUsage - this.usage);
+    const newUsage = (result.houseUsage ?? result.calculatedUsage);
+    if (this.usage !== newUsage) {
+      const relative = (newUsage - this.usage);
       this.emit(P1ReaderEvents.UsageChanged, {
         previousUsage: this.usage,
-        currentUsage: result.calculatedUsage,
+        currentUsage: newUsage,
         relative,
-        message: `Usage ${(relative > 0 ? 'increased +' : 'decreased ')}${relative} to ${result.calculatedUsage}`,
+        message: `Usage ${(relative > 0 ? 'increased +' : 'decreased ')}${relative} to ${newUsage}`,
       });
-      this.usage = result.calculatedUsage;
+      this.usage = newUsage;
     }
   }
 
