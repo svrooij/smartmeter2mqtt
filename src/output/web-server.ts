@@ -16,6 +16,7 @@ export default class WebServer extends Output {
   private wsServer?: WebSocket.Server;
 
   private lastReading?: DsmrMessage;
+
   private lastSolarReading?: SunspecResult;
 
   private checkTimeout?: NodeJS.Timeout;
