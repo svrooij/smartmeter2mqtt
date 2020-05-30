@@ -20,16 +20,38 @@
         <a href="#" data-target="mobile-demo" class="sidenav-trigger"><i class="material-icons">menu</i></a>
         <ul class="right hide-on-med-and-down">
           <li><a href="https://github.com/svrooij/smartmeter2mqtt">Github</a></li>
-          <li><a href="/api/reading">Show data</a></li>
+          <li><a href="/api/reading">Energy data</a></li>
+          <li><a href="/api/solar">Solar data</a></li>
         </ul>
       </div>
     </nav>
   
     <ul class="sidenav" id="mobile-demo">
       <li><a href="https://github.com/svrooij/smartmeter2mqtt">Github</a></li>
-      <li><a href="/api/reading">Show data</a></li>
+      <li><a href="/api/reading">Energy data</a></li>
+      <li><a href="/api/solar">Solar data</a></li>
     </ul>
     <div class="container">
+      <div class="row solar hide">
+        <div class="col s12 m6">
+          <div class="card">
+            <div class="card-content center-align">
+              <h3><i class="material-icons">wb_sunny</i> Solar production</h3>
+              <h4><span class="solarProduction"></span> watt</h4>
+            </div>
+          </div>
+        </div>
+        <div class="col s12 m6">
+          <div class="card">
+            <div class="card-content center-align">
+              <h3><i class="material-icons">house</i> House usage</h3>
+              <h4><span class="houseUsage"></span> watt</h4>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
       <div class="row">
         <div class="col s12 m6">
           <div class="card">
@@ -70,14 +92,15 @@
           </div>
         </div>
         <div class="col s12 m6">
-            <div class="card">
-              <div class="card-content">
-                <span class="card-title"><i class="material-icons">filter_drama</i> Gas</span>
-                <p><b><span class="totalGas"></span> m3</b><br/><small class="gasTs"></small></p>
-              </div>
+          <div class="card">
+            <div class="card-content">
+              <span class="card-title"><i class="material-icons">filter_drama</i> Gas</span>
+              <p><b><span class="totalGas"></span> m3</b><br/><small class="gasTs"></small></p>
             </div>
           </div>
+        </div>
       </div>
+      
   </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="loader.js"></script>

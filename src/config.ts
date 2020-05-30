@@ -18,6 +18,11 @@ export interface MqttConfig {
   url: string;
 }
 
+export interface SunspecConfig {
+  host: string;
+  port: number;
+}
+
 export interface OutputConfig {
   debug: boolean;
   jsonSocket?: number;
@@ -32,7 +37,7 @@ export interface Config {
   socket?: string;
 
   outputs: OutputConfig;
-
+  solar?: SunspecConfig;
 }
 
 export class ConfigLoader {
@@ -64,6 +69,9 @@ export class ConfigLoader {
       .conflicts('port', 'socket')
       .describe('debug', 'Enable debug output')
       .boolean('debug')
+      .describe('sunspec-modbus', 'IP of solar inverter with modbus TCP enabled')
+      .describe('sunspec-modbus-port', 'modbus TCP port')
+      .number('sunspec-modbus-port')
       .number('web-server')
       .number('tcp-server')
       .number('raw-tcp-server')
@@ -75,6 +83,7 @@ export class ConfigLoader {
         'post-interval': 300,
         'mqtt-topic': 'smartmeter',
         'mqtt-discovery-prefix': 'homeassistant',
+        'sunspec-modbus-port': 502,
       })
       .wrap(80)
       .version()
@@ -119,6 +128,13 @@ export class ConfigLoader {
 
     if (args['web-server']) {
       config.outputs.webserver = args['web-server'];
+    }
+
+    if (args['sunspec-modbus']) {
+      config.solar = {
+        host: args['sunspec-modbus'],
+        port: args['sunspec-modbus-port'],
+      } as SunspecConfig;
     }
 
     return config;

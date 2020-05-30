@@ -1,6 +1,7 @@
 import http, { Server } from 'http';
 import WebSocket from 'ws';
 import path from 'path';
+import { SunspecResult } from '@svrooij/sunspec/lib/sunspec-result';
 import Output from './output';
 import P1ReaderEvents from '../p1-reader-events';
 import P1Reader from '../p1-reader';
@@ -8,12 +9,14 @@ import DsmrMessage from '../dsmr-message';
 
 import express = require('express');
 
+
 export default class WebServer extends Output {
   private server?: Server;
 
   private wsServer?: WebSocket.Server;
 
   private lastReading?: DsmrMessage;
+  private lastSolarReading?: SunspecResult;
 
   private checkTimeout?: NodeJS.Timeout;
 
@@ -27,6 +30,11 @@ export default class WebServer extends Output {
     p1Reader.on(P1ReaderEvents.ParsedResult, (data) => {
       this.setReading(data);
     });
+
+    p1Reader.on(P1ReaderEvents.SolarResult, (data) => {
+      this.lastSolarReading = data;
+    });
+
     if (this.startServer === true) {
       this.startWebserver();
     }
@@ -51,6 +59,7 @@ export default class WebServer extends Output {
       });
     }
     app.get('/api/reading', (req, res) => this.getReading(req, res));
+    app.get('/api/solar', (req, res) => this.getSolarReading(req, res));
     app.use(express.static(path.join(__dirname, 'wwwroot'), { index: 'index.html' }));
     this.server.listen(this.port);
     this.checkTimeout = setInterval(() => { this.checkSockets(); }, 10000);
@@ -68,6 +77,14 @@ export default class WebServer extends Output {
   private getReading(req: any, res: any): void {
     if (this.lastReading) {
       res.json(this.lastReading);
+    } else {
+      res.status(400).json({ err: 'No reading just yet!' });
+    }
+  }
+
+  private getSolarReading(req: any, res: any): void {
+    if (this.lastSolarReading) {
+      res.json(this.lastSolarReading);
     } else {
       res.status(400).json({ err: 'No reading just yet!' });
     }

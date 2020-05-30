@@ -1,5 +1,6 @@
 import GasValue from './gas-value';
 
+
 /**
  * Properties in this base class are used by some outputs.
  * By defining them here we set the type instead of all possible types.
@@ -91,6 +92,21 @@ interface DsmrMessageBase {
    * @memberof DsmrMessageBase
    */
   totalT2Use?: number;
+
+  /**
+   * Number of watts your solar panels are producing.
+   *
+   * @type {number}
+   * @memberof DsmrMessageBase
+   */
+  solarProduction?: number;
+  /**
+   * This is the solar production - calculated usage. Should show how much you are actually using.
+   *
+   * @type {number}
+   * @memberof DsmrMessageBase
+   */
+  houseUsage?: number;
 }
 
 /**

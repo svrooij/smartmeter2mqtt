@@ -32,6 +32,7 @@
   "homepage": "https://github.com/svrooij/smartmeter2mqtt#readme",
   "dependencies": {
     "@serialport/parser-readline": "^8.0.6",
+    "@svrooij/sunspec": "^0.9.0",
     "@svrooij/tcp-server": "^1.0.1",
     "crc": "^3.8.0",
     "express": "^4.17.1",

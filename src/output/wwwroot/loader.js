@@ -81,4 +81,11 @@ function updateData(data) {
   let gas = data.gas.totalUse;
   gas = Math.round(gas * 100.0) / 100.0;
   $('.totalGas').text(gas);
+
+  if(data.houseUsage) {
+    // Load solar
+    $('.houseUsage').text(data.houseUsage);
+    $('.solarProduction').text(Math.round(data.solarProduction));
+    $('.solar').removeClass('hide');
+  }
 }
