@@ -62,7 +62,7 @@ export default class MqttOutput extends Output {
 
   private publishData(data: DsmrMessage): void {
     if (this.config.distinct) {
-      this.config.distinctFields.forEach((element) => {
+      Object.keys(data).forEach((element) => {
         if (data[element]) {
           const distinctVal = { ts: Date.now(), val: data[element] };
           this.sendToMqtt(element, distinctVal);
