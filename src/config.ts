@@ -61,6 +61,7 @@ export class ConfigLoader {
       .describe('mqtt-topic', 'Use this topic prefix for all messages')
       .describe('mqtt-distinct', 'Publish data distinct to mqtt')
       .boolean('mqtt-distinct')
+      .describe('mqtt-distinct-fields', 'A comma separated list of fields you want published distinct.')
       .describe('mqtt-discovery', 'Emit auto-discovery message')
       .boolean('mqtt-discovery')
       .describe('mqtt-discovery-prefix', 'Autodiscovery prefix')
@@ -84,6 +85,7 @@ export class ConfigLoader {
         'mqtt-topic': 'smartmeter',
         'mqtt-discovery-prefix': 'homeassistant',
         'sunspec-modbus-port': 502,
+        'mqtt-distinct-fields': 'currentTarrif,totalT1Use,totalT2Use,totalT1Delivered,totalT2Delivered,powerSn,currentUsage,currentDelivery',
       })
       .wrap(80)
       .version()
@@ -107,7 +109,7 @@ export class ConfigLoader {
         discovery: args['mqtt-discovery'] === true,
         discoveryPrefix: args['mqtt-discovery-prefix'] ?? 'homeassistant',
         distinct: args['mqtt-distinct'] === true,
-        distinctFields: ['currentTarrif', 'totalT1Use', 'totalT2Use', 'totalT1Delivered', 'totalT2Delivered', 'powerSn', 'currentUsage', 'currentDelivery'],
+        distinctFields: args['mqtt-distinct-fields'].split(','),
         prefix: args['mqtt-topic'] ?? 'smartmeter',
         url: args['mqtt-url'],
       };
