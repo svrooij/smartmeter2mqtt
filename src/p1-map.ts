@@ -91,12 +91,22 @@ export default class P1Map {
     { id: '1-0:2.7.0', name: 'currentDelivery', valueRetriever: P1Map.parseFirstFloat },
     { id: '0-0:96.7.21', name: 'powerFailures', valueRetriever: P1Map.parseFirstInt },
     { id: '0-0:96.7.9', name: 'longPowerFailures', valueRetriever: P1Map.parseFirstInt },
+    // XMX5 - todo
+    { id: '1-0:99.97.0', name: 'longPowerFailureEventLog', valueRetriever: P1Map.parseFirstInt },    
     { id: '1-0:32.32.0', name: 'voltageSagsL1', valueRetriever: P1Map.parseFirstInt },
     { id: '1-0:52.32.0', name: 'voltageSagsL2', valueRetriever: P1Map.parseFirstInt },
     { id: '1-0:72.32.0', name: 'voltageSagsL3', valueRetriever: P1Map.parseFirstInt },
     { id: '1-0:32.36.0', name: 'voltageSwellsL1', valueRetriever: P1Map.parseFirstInt },
     { id: '1-0:52.36.0', name: 'voltageSwellsL2', valueRetriever: P1Map.parseFirstInt },
     { id: '1-0:72.36.0', name: 'voltageSwellsL3', valueRetriever: P1Map.parseFirstInt },
+    // XMX5 - todo
+    { id: '0-0:96.13.0', name: 'textMessage', valueRetriever: P1Map.parseFirstFloat },
+    // XMX5
+    { id: '1-0:32.7.0', name: 'voltageL1', valueRetriever: P1Map.parseFirstFloat },
+    // XMX5
+    { id: '1-0:52.7.0', name: 'voltageL2', valueRetriever: P1Map.parseFirstFloat },
+    // XMX5
+    { id: '1-0:72.7.0', name: 'voltageL3', valueRetriever: P1Map.parseFirstFloat },
     { id: '1-0:31.7.0', name: 'currentL1', valueRetriever: P1Map.parseFirstFloat },
     { id: '1-0:51.7.0', name: 'currentL2', valueRetriever: P1Map.parseFirstFloat },
     { id: '1-0:71.7.0', name: 'currentL3', valueRetriever: P1Map.parseFirstFloat },
@@ -109,5 +119,11 @@ export default class P1Map {
     { id: '0-2:24.1.0', name: 'deviceType', valueRetriever: P1Map.getFirstString },
     { id: '0-2:96.1.0', name: 'gasSn', valueRetriever: P1Map.getFirstString },
     { id: '0-2:24.2.1', name: 'gas', valueRetriever: P1Map.parseGasValue },
+    // XMX5
+    { id: '0-1:24.1.0', name: 'deviceType', valueRetriever: P1Map.getFirstString },
+    // XMX5
+    { id: '0-1:96.1.0', name: 'gasSn', valueRetriever: P1Map.getFirstString },
+    // XMX5
+    { id: '0-1:24.2.1', name: 'gas', valueRetriever: P1Map.parseGasValue },
   ] as Array<P1MapItem>;
 }
