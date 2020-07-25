@@ -126,10 +126,11 @@ export default class P1Reader extends EventEmitter {
     }
 
     /**
-     * Handle the gas values; some todo here since xGas is only set for XMX5 meters
+     * Handle the gas value
      */
-    if (result.xGas) {
-      const newGasUsage = ((<GasValue> result.xGas).totalUse ?? 0);
+    const gas = result.xGas ?? result.gas
+    if (gas) {
+      const newGasUsage = ((<GasValue> gas).totalUse ?? 0);
       if (this.gasUsage !== newGasUsage) {
         const relative = (newGasUsage - this.gasUsage);
         this.emit(P1ReaderEvents.GasUsageChanged, {
