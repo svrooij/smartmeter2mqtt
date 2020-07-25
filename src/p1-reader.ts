@@ -131,16 +131,16 @@ export default class P1Reader extends EventEmitter {
     const gas = result.xGas ?? result.gas
     if (gas) {
       const newGasUsage = ((<GasValue> gas).totalUse ?? 0);
-      if (this.gasUsage !== newGasUsage) {
+      if (this.gasUsage !== newGasUsage && this.gasUsage) {
         const relative = (newGasUsage - this.gasUsage);
         this.emit(P1ReaderEvents.GasUsageChanged, {
           previousUsage: this.gasUsage,
           currentUsage: newGasUsage,
           relative,
-          message: `Usage ${(relative > 0 ? 'increased +' : 'decreased ')}${relative} to ${newGasUsage}`,
+          message: `Usage increased +${relative} to ${newGasUsage}`,
         });
-        this.gasUsage = newGasUsage;
       } 
+      this.gasUsage = newGasUsage;
     }   
   }
 
