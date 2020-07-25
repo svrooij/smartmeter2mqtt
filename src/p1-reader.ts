@@ -5,9 +5,12 @@ import P1Parser from './p1-parser';
 import P1ReaderEvents from './p1-reader-events';
 import DsmrMessage from './dsmr-message';
 import SolarInput from './solar-input';
+import GasValue from './gas-value';
 
 export default class P1Reader extends EventEmitter {
   private usage: number;
+
+  private gasUsage: number;
 
   private reading: boolean;
 
@@ -31,6 +34,7 @@ export default class P1Reader extends EventEmitter {
   constructor() {
     super();
     this.usage = 0;
+    this.gasUsage = 0;
     this.reading = false;
     this.parsing = false;
   }
@@ -120,6 +124,23 @@ export default class P1Reader extends EventEmitter {
       });
       this.usage = newUsage;
     }
+
+    /**
+     * Handle the gas values
+     */
+    if (result.xGas) {
+      const newGasUsage = ((<GasValue> result.xGas).totalUse ?? 0);
+      if (this.gasUsage !== newGasUsage) {
+        const relative = (newGasUsage - this.gasUsage);
+        this.emit(P1ReaderEvents.GasUsageChanged, {
+          previousUsage: this.gasUsage,
+          currentUsage: newGasUsage,
+          relative,
+          message: `Usage ${(relative > 0 ? 'increased +' : 'decreased ')}${relative} to ${newGasUsage}`,
+        });
+        this.gasUsage = newGasUsage;
+      } 
+    }   
   }
 
   public close(): Promise<void> {

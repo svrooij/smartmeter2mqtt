@@ -34,6 +34,10 @@ export default class MqttOutput extends Output {
       this.publishUsage(data);
     });
 
+    p1Reader.on(P1ReaderEvents.GasUsageChanged, (data) => {
+      this.publishUsage(data);
+    });
+
     p1Reader.on(P1ReaderEvents.SolarResult, (data) => {
       this.publishSolar(data);
     });

@@ -13,6 +13,8 @@ export default class P1ReaderEvents {
 
   /** Usage change is emitted after the parsed result. It keeps the last result to compare. */
   static get UsageChanged(): string { return 'usageChanged'; }
-
+  
+  static get GasUsageChanged(): string { return 'gasUsageChanged'; }
+  
   static get SolarResult(): string { return 'solar'; }
 }

@@ -28,6 +28,9 @@ export default class IntervalOutput extends Output {
     p1Reader.on(P1ReaderEvents.UsageChanged, (result) => {
       this.emit(P1ReaderEvents.UsageChanged, result);
     });
+    p1Reader.on(P1ReaderEvents.GasUsageChanged, (result) => {
+      this.emit(P1ReaderEvents.GasUsageChanged, result);
+    });
 
     this.timer = setInterval(() => {
       this.publishNextEvent = true;
