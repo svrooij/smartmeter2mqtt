@@ -132,7 +132,10 @@ export default class P1Reader extends EventEmitter {
     }
 
     /**
-     * Handle the gas value
+     * Handle the gas value - this is a bit different from electricity usage, the meter does not
+     * indicate the actual gas usage in m3/hour but only submits the meter reading at certain
+     * intervals and after a certain amount of gas has been used. The meter reading and the
+     * timestamp can be used to compute the usage in m3/hour
      */
     const gas = result.xGas ?? result.gas;
     if (gas) {
