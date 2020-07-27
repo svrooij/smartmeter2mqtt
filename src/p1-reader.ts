@@ -138,7 +138,7 @@ export default class P1Reader extends EventEmitter {
     if (gas) {
       const newGasReading = ((gas as GasValue).totalUse ?? 0);
       if (this.gasReading !== newGasReading) {
-        const relative = (newGasReading - this.gasReading);
+        const relative = this.gasReading ? (newGasReading - this.gasReading) : 0;
         let newGasUsage = 0;
         const currentGasReadingTimestamp = (new Date(((gas as GasValue)).ts ?? 0).getTime() / 1000);
         const period = currentGasReadingTimestamp - this.gasReadingTimestamp;
@@ -158,6 +158,7 @@ export default class P1Reader extends EventEmitter {
         });
 
         this.gasReadingTimestamp = currentGasReadingTimestamp;
+        this.gasReading = newGasReading;
         this.gasUsage = newGasUsage;
       }
     }
