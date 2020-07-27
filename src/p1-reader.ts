@@ -12,6 +12,10 @@ export default class P1Reader extends EventEmitter {
 
   private gasUsage: number;
 
+  private gasReadingTimestamp: number;
+
+  private gasReading: number;
+
   private reading: boolean;
 
   private parsing: boolean;
@@ -35,6 +39,8 @@ export default class P1Reader extends EventEmitter {
     super();
     this.usage = 0;
     this.gasUsage = 0;
+    this.gasReading = 0;
+    this.gasReadingTimestamp = 0;
     this.reading = false;
     this.parsing = false;
   }
@@ -130,17 +136,30 @@ export default class P1Reader extends EventEmitter {
      */
     const gas = result.xGas ?? result.gas;
     if (gas) {
-      const newGasUsage = ((gas as GasValue).totalUse ?? 0);
-      if (this.gasUsage !== newGasUsage && this.gasUsage) {
-        const relative = (newGasUsage - this.gasUsage);
+      const newGasReading = ((gas as GasValue).totalUse ?? 0);
+      if (this.gasReading !== newGasReading) {
+        const relative = (newGasReading - this.gasReading);
+        let newGasUsage = 0;
+        const currentGasReadingTimestamp = (new Date(((gas as GasValue)).ts ?? 0).getTime() / 1000);
+        const period = currentGasReadingTimestamp - this.gasReadingTimestamp;
+
+        /**
+         * Gasusage in m3 per hour
+         */
+        if (period) {
+          newGasUsage = relative * (3600 / period);
+        }
+
         this.emit(P1ReaderEvents.GasUsageChanged, {
           previousUsage: this.gasUsage,
           currentUsage: newGasUsage,
           relative,
-          message: `Usage increased +${relative} to ${newGasUsage}`,
+          message: `Reading increased +${relative} to ${newGasReading}`,
         });
+
+        this.gasReadingTimestamp = currentGasReadingTimestamp;
+        this.gasUsage = newGasUsage;
       }
-      this.gasUsage = newGasUsage;
     }
   }
 
