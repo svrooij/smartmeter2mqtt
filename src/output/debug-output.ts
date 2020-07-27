@@ -20,7 +20,7 @@ export default class DebugOutput extends Output {
     });
     p1Reader.on(P1ReaderEvents.GasUsageChanged, (result) => {
       console.log(' - gasUsageChange %s', result.message);
-    });    
+    });
     p1Reader.on(P1ReaderEvents.ErrorMessage, (message) => {
       console.log(' - errorMessage %s', message);
     });
