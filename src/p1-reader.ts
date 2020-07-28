@@ -162,9 +162,9 @@ export default class P1Reader extends EventEmitter {
          * accordingly
          */
         this.emit(P1ReaderEvents.GasUsageChanged, {
-          previousUsage: this.gasUsage.toFixed(3),
-          currentUsage: newGasUsage.toFixed(3),
-          relative: relative.toFixed(3),
+          previousUsage: parseFloat(this.gasUsage.toFixed(3)),
+          currentUsage: parseFloat(newGasUsage.toFixed(3)),
+          relative: parseFloat(relative.toFixed(3)),
           message: `Reading increased +${relative} to ${newGasReading}`,
         });
 
