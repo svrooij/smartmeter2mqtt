@@ -140,7 +140,11 @@ export default class P1Reader extends EventEmitter {
     const gas = result.xGas ?? result.gas;
     if (gas) {
       const newGasReading = ((gas as GasValue).totalUse ?? 0);
-      if (this.gasReading !== newGasReading) {
+      /**
+       * Report if there was gas usage but also report when gas usage
+       * stopped
+       */
+      if (this.gasReading !== newGasReading || this.gasUsage) {
         const relative = this.gasReading ? (newGasReading - this.gasReading) : 0;
         let newGasUsage = 0;
         const currentGasReadingTimestamp = (new Date(((gas as GasValue)).ts ?? 0).getTime() / 1000);
