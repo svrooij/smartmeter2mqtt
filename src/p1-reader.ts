@@ -151,16 +151,20 @@ export default class P1Reader extends EventEmitter {
         const period = currentGasReadingTimestamp - this.gasReadingTimestamp;
 
         /**
-         * Gasusage in m3 per hour
+         * Gas usage in m3 per hour
          */
         if (period) {
           newGasUsage = relative * (3600 / period);
         }
 
+        /**
+         * Gas usage is measured in thousands (0.001) - round the numbers
+         * accordingly
+         */
         this.emit(P1ReaderEvents.GasUsageChanged, {
-          previousUsage: this.gasUsage,
-          currentUsage: newGasUsage,
-          relative,
+          previousUsage: this.gasUsage.toFixed(3),
+          currentUsage: newGasUsage.toFixed(3),
+          relative: relative.toFixed(3),
           message: `Reading increased +${relative} to ${newGasReading}`,
         });
 
