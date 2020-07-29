@@ -133,29 +133,24 @@ export default class P1Reader extends EventEmitter {
 
     /**
      * Handle the gas value - this is a bit different from electricity usage, the meter does not
-     * indicate the actual gas usage in m3/hour but only submits the meter reading at certain
-     * intervals and after a certain amount of gas has been used. The meter reading and the
-     * timestamp can be used to compute the usage in m3/hour
+     * indicate the actual gas usage in m3/hour but only submits the meter reading every 5 minutes
      */
     const gas = result.xGas ?? result.gas;
     if (gas) {
-      const newGasReading = ((gas as GasValue).totalUse ?? 0);
       const currentGasReadingTimestamp = (new Date(((gas as GasValue)).ts ?? 0).getTime() / 1000);
       const period = currentGasReadingTimestamp - this.gasReadingTimestamp;
       /**
-       * Report if there was gas usage but also report when gas usage
-       * stopped or a report period has ended
+       * Report for every new timestamp
        */
-      if (this.gasReading !== newGasReading || this.gasUsage || period) {
+      if (period) {
+        const newGasReading = ((gas as GasValue).totalUse ?? 0);
         const relative = this.gasReading ? (newGasReading - this.gasReading) : 0;
         let newGasUsage = 0;
 
         /**
          * Gas usage in m3 per hour
          */
-        if (period) {
-          newGasUsage = relative * (3600 / period);
-        }
+        newGasUsage = relative * (3600 / period);
 
         /**
          * Gas usage is measured in thousands (0.001) - round the numbers
