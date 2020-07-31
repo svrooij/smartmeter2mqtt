@@ -5,9 +5,16 @@ import P1Parser from './p1-parser';
 import P1ReaderEvents from './p1-reader-events';
 import DsmrMessage from './dsmr-message';
 import SolarInput from './solar-input';
+import GasValue from './gas-value';
 
 export default class P1Reader extends EventEmitter {
   private usage: number;
+
+  private gasUsage: number;
+
+  private gasReadingTimestamp: number;
+
+  private gasReading: number;
 
   private reading: boolean;
 
@@ -31,6 +38,9 @@ export default class P1Reader extends EventEmitter {
   constructor() {
     super();
     this.usage = 0;
+    this.gasUsage = 0;
+    this.gasReading = 0;
+    this.gasReadingTimestamp = 0;
     this.reading = false;
     this.parsing = false;
   }
@@ -119,6 +129,44 @@ export default class P1Reader extends EventEmitter {
         message: `Usage ${(relative > 0 ? 'increased +' : 'decreased ')}${relative} to ${newUsage}`,
       });
       this.usage = newUsage;
+    }
+
+    /**
+     * Handle the gas value - this is a bit different from electricity usage, the meter does not
+     * indicate the actual gas usage in m3/hour but only submits the meter reading every XX minutes
+     */
+    const gas = result.xGas ?? result.gas;
+    if (gas) {
+      const currentGasReadingTimestamp = (new Date(((gas as GasValue)).ts ?? 0).getTime() / 1000);
+      const period = currentGasReadingTimestamp - this.gasReadingTimestamp;
+      /**
+       * Report for every new timestamp
+       */
+      if (period) {
+        const newGasReading = ((gas as GasValue).totalUse ?? 0);
+        const relative = this.gasReading ? (newGasReading - this.gasReading) : 0;
+        let newGasUsage = 0;
+
+        /**
+         * Gas usage in m3 per hour
+         */
+        newGasUsage = relative * (3600 / period);
+
+        /**
+         * Gas usage is measured in thousands (0.001) - round the numbers
+         * accordingly
+         */
+        this.emit(P1ReaderEvents.GasUsageChanged, {
+          previousUsage: parseFloat(this.gasUsage.toFixed(3)),
+          currentUsage: parseFloat(newGasUsage.toFixed(3)),
+          relative: parseFloat(relative.toFixed(3)),
+          message: `Reading increased +${relative} to ${newGasReading}`,
+        });
+
+        this.gasReadingTimestamp = currentGasReadingTimestamp;
+        this.gasReading = newGasReading;
+        this.gasUsage = newGasUsage;
+      }
     }
   }
 

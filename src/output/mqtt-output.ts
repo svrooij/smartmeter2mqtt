@@ -34,6 +34,10 @@ export default class MqttOutput extends Output {
       this.publishUsage(data);
     });
 
+    p1Reader.on(P1ReaderEvents.GasUsageChanged, (data) => {
+      this.publishGasUsage(data);
+    });
+
     p1Reader.on(P1ReaderEvents.SolarResult, (data) => {
       this.publishSolar(data);
     });
@@ -66,6 +70,14 @@ export default class MqttOutput extends Output {
     delete message.currentUsage;
     message.tc = Date.now();
     this.mqtt?.publish(this.getTopic('usage'), JSON.stringify(message), { qos: 0, retain: false });
+  }
+
+  private publishGasUsage(data: any): void {
+    const message = data;
+    message.val = data.currentUsage;
+    delete message.currentUsage;
+    message.tc = Date.now();
+    this.mqtt?.publish(this.getTopic('gasUsage'), JSON.stringify(message), { qos: 0, retain: false });
   }
 
   private publishData(data: DsmrMessage): void {
