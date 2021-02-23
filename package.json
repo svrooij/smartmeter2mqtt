@@ -65,9 +65,7 @@
     "smartmeter2mqtt": "./dist/index.js"
   },
   "files": [
-    "LICENSE",
-    "README.md",
-    "package.json",
-    "dist"
+    "dist/**/*.js",
+    "dist/output/wwwroot"
   ]
 }

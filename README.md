@@ -130,7 +130,17 @@ For a **direct connection** you'll need a Smartmeter cable like [this one at sos
 
 ### TCP socket
 
-You can also connect to a **TCP socket**, this way you don't need the device running this program to be on a device near your meter. You can also check out this [ESP8266 P1 reader](http://www.esp8266thingies.nl/wp/), it creates a TCP socket for your meter.
+You can also connect to a **TCP socket**, this way you don't need the device running this program to be on a device near your meter.
+
+Tested with:
+
+| Device | Meter Type | User | Date |
+|:-------|:-----------|:-----|:-----|
+|[Slimme lezer](https://www.zuidwijk.com/slimme-lezer-smart-reader/?referal=svrooij) by Marcel Zuidwijk | DSMR 4.2 | [@svrooij](https://svrooij.io) | `2021-02-23` |
+
+I'm tempted to recommend the device above since it doesn't require your pi to be near your smartmeter. The latest version of the **Slimme lezer** in combination with a DSMR 5 meter, doesn't even require an external power source.
+
+This app can also [output a raw socket](#output---raw-tcp-socket) so you can use one instance running all the time and have a second instance connected to the socket for debugging.
 
 ### Solar panel inverter (optional)
 
