@@ -10,8 +10,7 @@
     "lint": "eslint ./src --ext .js,.jsx,.ts,.tsx",
     "lint-fix": "eslint ./src --ext .js,.jsx,.ts,.tsx --fix",
     "test": "npm run lint && jest",
-    "prepack": "npm run compile && npm run copy-www",
-    "semantic-release": "semantic-release"
+    "prepack": "npm run compile && npm run copy-www"
   },
   "repository": {
     "type": "git",
