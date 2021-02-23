@@ -10,8 +10,7 @@
     "lint": "eslint ./src --ext .js,.jsx,.ts,.tsx",
     "lint-fix": "eslint ./src --ext .js,.jsx,.ts,.tsx --fix",
     "test": "npm run lint && jest",
-    "prepack": "npm run compile && npm run copy-www",
-    "semantic-release": "semantic-release"
+    "prepack": "npm run compile && npm run copy-www"
   },
   "repository": {
     "type": "git",
@@ -31,43 +30,40 @@
   },
   "homepage": "https://github.com/svrooij/smartmeter2mqtt#readme",
   "dependencies": {
-    "@serialport/parser-readline": "^8.0.6",
+    "@serialport/parser-readline": "^9.0.7",
     "@svrooij/sunspec": "^0.9.0",
     "@svrooij/tcp-server": "^1.0.1",
     "crc": "^3.8.0",
     "express": "^4.17.1",
-    "mqtt": "^3.0.0",
-    "node-fetch": "^2.6.0",
-    "serialport": "^8.0.7",
-    "ws": "^7.2.3",
-    "yargs": "^15.3.1"
+    "mqtt": "^4.2.6",
+    "node-fetch": "^2.6.1",
+    "serialport": "^9.0.7",
+    "ws": "^7.4.3",
+    "yargs": "^16.2.0"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.11",
+    "@types/chai": "^4.2.15",
     "@types/crc": "^3.4.0",
-    "@types/express": "^4.17.6",
-    "@types/jest": "^25.2.1",
-    "@types/node-fetch": "^2.5.6",
-    "@types/serialport": "^8.0.0",
-    "@types/ws": "^7.2.4",
-    "@types/yargs": "^15.0.4",
+    "@types/express": "^4.17.11",
+    "@types/jest": "^26.0.2",
+    "@types/node-fetch": "^2.5.8",
+    "@types/serialport": "^8.0.1",
+    "@types/ws": "^7.4.0",
+    "@types/yargs": "^16.0.0",
     "@typescript-eslint/eslint-plugin": "^2.28.0",
-    "chai": "^4.2.0",
+    "chai": "^4.3.0",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-typescript": "^7.2.1",
     "eslint-plugin-import": "^2.20.2",
-    "jest": "^25.3.0",
-    "semantic-release": "^17.0.4",
-    "ts-jest": "^25.3.1",
+    "jest": "^26.6.3",
+    "ts-jest": "^26.5.1",
     "typescript": "^3.8.3"
   },
   "bin": {
     "smartmeter2mqtt": "./dist/index.js"
   },
   "files": [
-    "LICENSE",
-    "README.md",
-    "package.json",
-    "dist"
+    "dist/**/*.js",
+    "dist/output/wwwroot"
   ]
 }

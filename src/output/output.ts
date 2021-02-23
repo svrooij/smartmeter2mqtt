@@ -25,5 +25,5 @@ export default abstract class Output extends EventEmitter {
   /**
    * close is where you would close your output, it needed.
    */
-  abstract async close(): Promise<void>;
+  abstract close(): Promise<void>;
 }

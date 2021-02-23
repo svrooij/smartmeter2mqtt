@@ -32,6 +32,10 @@ export default class P1Reader extends EventEmitter {
 
   private parser?: P1Parser;
 
+  private dataBuffer = '';
+
+  private bufferInterval?: NodeJS.Timeout;
+
   // Inverter stuff
   private solarInput?: SolarInput;
 
@@ -62,10 +66,17 @@ export default class P1Reader extends EventEmitter {
     this.socket.connect(port, host);
     this.socket.setEncoding('ascii');
     this.socket.on('data', (data) => {
-      const lines = data.toString().trim().split('\n');
-      lines.forEach((line) => {
-        this.emit(P1ReaderEvents.Line, line);
-      });
+      if (this.bufferInterval) {
+        clearTimeout(this.bufferInterval);
+      }
+      this.dataBuffer += data.toString();
+      this.bufferInterval = setTimeout(() => {
+        const lines = this.dataBuffer.trim().split('\r\n');
+        lines.forEach((line) => {
+          this.emit(P1ReaderEvents.Line, line);
+        });
+        this.dataBuffer = '';
+      }, 100);
     });
 
     this.socket.on('close', () => {
@@ -174,10 +185,13 @@ export default class P1Reader extends EventEmitter {
     if (this.solarInput) {
       this.solarInput = undefined;
     }
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve, reject) => {
       this.reading = false;
       if (this.serialPort) {
-        this.serialPort.close(resolve);
+        this.serialPort.close((err) => {
+          if (err) reject(err);
+          else resolve();
+        });
       } else if (this.socket) {
         this.socket.destroy();
         resolve();
