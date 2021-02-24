@@ -1,9 +1,11 @@
 import mqtt, { MqttClient, IClientOptions } from 'mqtt';
+import { SunspecResult } from '@svrooij/sunspec/lib/sunspec-result';
 import Output from './output';
 import P1ReaderEvents from '../p1-reader-events';
 import { MqttConfig } from '../config';
 import P1Reader from '../p1-reader';
 import DsmrMessage from '../dsmr-message';
+
 
 export default class MqttOutput extends Output {
   private mqtt?: MqttClient;
@@ -19,6 +21,7 @@ export default class MqttOutput extends Output {
     this.mqtt.on('connect', () => {
       this.mqtt?.publish(`${this.config.prefix}/connected`, '2', { qos: 0, retain: true });
     });
+
     p1Reader.on(P1ReaderEvents.ParsedResult, (data) => {
       this.publishData(data);
       if (this.config.discovery && !this.discoverySend) {
@@ -26,8 +29,17 @@ export default class MqttOutput extends Output {
         this.discoverySend = true;
       }
     });
+
     p1Reader.on(P1ReaderEvents.UsageChanged, (data) => {
       this.publishUsage(data);
+    });
+
+    p1Reader.on(P1ReaderEvents.GasUsageChanged, (data) => {
+      this.publishGasUsage(data);
+    });
+
+    p1Reader.on(P1ReaderEvents.SolarResult, (data) => {
+      this.publishSolar(data);
     });
   }
 
@@ -60,6 +72,14 @@ export default class MqttOutput extends Output {
     this.mqtt?.publish(this.getTopic('usage'), JSON.stringify(message), { qos: 0, retain: false });
   }
 
+  private publishGasUsage(data: any): void {
+    const message = data;
+    message.val = data.currentUsage;
+    delete message.currentUsage;
+    message.tc = Date.now();
+    this.mqtt?.publish(this.getTopic('gasUsage'), JSON.stringify(message), { qos: 0, retain: false });
+  }
+
   private publishData(data: DsmrMessage): void {
     if (this.config.distinct) {
       this.config.distinctFields.forEach((element) => {
@@ -71,6 +91,10 @@ export default class MqttOutput extends Output {
     } else {
       this.sendToMqtt('energy', data);
     }
+  }
+
+  private publishSolar(data: SunspecResult): void {
+    this.sendToMqtt('solar', data);
   }
 
   private sendToMqtt(topicSuffix: string, data: any): void {

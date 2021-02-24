@@ -18,6 +18,11 @@ export interface MqttConfig {
   url: string;
 }
 
+export interface SunspecConfig {
+  host: string;
+  port: number;
+}
+
 export interface OutputConfig {
   debug: boolean;
   jsonSocket?: number;
@@ -32,7 +37,7 @@ export interface Config {
   socket?: string;
 
   outputs: OutputConfig;
-
+  solar?: SunspecConfig;
 }
 
 export class ConfigLoader {
@@ -56,6 +61,7 @@ export class ConfigLoader {
       .describe('mqtt-topic', 'Use this topic prefix for all messages')
       .describe('mqtt-distinct', 'Publish data distinct to mqtt')
       .boolean('mqtt-distinct')
+      .describe('mqtt-distinct-fields', 'A comma separated list of fields you want published distinct.')
       .describe('mqtt-discovery', 'Emit auto-discovery message')
       .boolean('mqtt-discovery')
       .describe('mqtt-discovery-prefix', 'Autodiscovery prefix')
@@ -64,6 +70,9 @@ export class ConfigLoader {
       .conflicts('port', 'socket')
       .describe('debug', 'Enable debug output')
       .boolean('debug')
+      .describe('sunspec-modbus', 'IP of solar inverter with modbus TCP enabled')
+      .describe('sunspec-modbus-port', 'modbus TCP port')
+      .number('sunspec-modbus-port')
       .number('web-server')
       .number('tcp-server')
       .number('raw-tcp-server')
@@ -75,6 +84,8 @@ export class ConfigLoader {
         'post-interval': 300,
         'mqtt-topic': 'smartmeter',
         'mqtt-discovery-prefix': 'homeassistant',
+        'sunspec-modbus-port': 502,
+        'mqtt-distinct-fields': 'currentTarrif,totalT1Use,totalT2Use,totalT1Delivered,totalT2Delivered,powerSn,currentUsage,currentDelivery',
       })
       .wrap(80)
       .version()
@@ -98,7 +109,7 @@ export class ConfigLoader {
         discovery: args['mqtt-discovery'] === true,
         discoveryPrefix: args['mqtt-discovery-prefix'] ?? 'homeassistant',
         distinct: args['mqtt-distinct'] === true,
-        distinctFields: ['currentTarrif', 'totalT1Use', 'totalT2Use', 'totalT1Delivered', 'totalT2Delivered', 'powerSn', 'currentUsage', 'currentDelivery'],
+        distinctFields: args['mqtt-distinct-fields'].split(','),
         prefix: args['mqtt-topic'] ?? 'smartmeter',
         url: args['mqtt-url'],
       };
@@ -119,6 +130,13 @@ export class ConfigLoader {
 
     if (args['web-server']) {
       config.outputs.webserver = args['web-server'];
+    }
+
+    if (args['sunspec-modbus']) {
+      config.solar = {
+        host: args['sunspec-modbus'],
+        port: args['sunspec-modbus-port'],
+      } as SunspecConfig;
     }
 
     return config;

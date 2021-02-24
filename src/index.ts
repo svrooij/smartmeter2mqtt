@@ -8,6 +8,7 @@ import TcpOutput from './output/tcp-output';
 import MqttOutput from './output/mqtt-output';
 import HttpOutput from './output/http-output';
 import DebugOutput from './output/debug-output';
+import ModbusSolarInput from './modbus-solar-input';
 
 class Smartmeter {
   private reader: P1Reader;
@@ -25,7 +26,7 @@ class Smartmeter {
     console.log('----------------------------------------');
   }
 
-  start(): void {
+  public async start(): Promise<void> {
     if (this.config.serialPort && this.config.serialPort.length > 0) {
       console.log('- Read serial port %s', this.config.serialPort);
       this.reader.startWithSerialPort(this.config.serialPort);
@@ -40,6 +41,9 @@ class Smartmeter {
     } else {
       console.warn('Port or socket required');
       process.exit(2);
+    }
+    if (this.config.solar) {
+      this.reader.addSolarInput(new ModbusSolarInput(this.config.solar.host, this.config.solar.port));
     }
     this.startOutputs();
   }

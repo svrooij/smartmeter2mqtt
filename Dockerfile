@@ -1,4 +1,5 @@
-FROM node:current-alpine as install
+FROM node:current-alpine as node-original
+FROM node-original as install
 WORKDIR /usr/src/app
 COPY package*.json ./
 RUN apk update &&\
@@ -11,13 +12,13 @@ COPY ./src/ ./src/
 COPY tsconfig.json ./
 RUN npm run prepack
 
-FROM node:current-alpine as combiner
+FROM node-original as combiner
 WORKDIR /usr/src/app
 COPY --from=install /usr/src/app/node_modules /usr/src/app/node_modules
 COPY --from=install /usr/src/app/package.json /usr/src/app/package.json
 COPY --from=compile /usr/src/app/dist /usr/src/app/dist
 
-FROM node:current-alpine
+FROM node-original as production
 ARG BUILD_DATE=unknown
 ARG BUILD_VERSION=0.0.0-development
 ARG VCS_REF=not-set
