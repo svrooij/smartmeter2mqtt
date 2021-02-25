@@ -63,6 +63,11 @@ export default class P1Reader extends EventEmitter {
 
   public startWithSocket(host: string, port: number): void {
     this.socket = new Socket();
+    this.socket.setTimeout(60 * 1000, () => {
+      console.warn('Socket timeout');
+      this.socket?.end();
+      process.exit(100);
+    });
     this.socket.connect(port, host);
     this.socket.setEncoding('ascii');
     this.socket.on('data', (data) => {
