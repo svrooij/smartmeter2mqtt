@@ -288,6 +288,42 @@ If you're running home assistant, be sure to enable mqtt discovery `--mqtt-disco
 
 This section is for the curious ones.
 
+### Debugging
+
+You can easily debug this app in vscode if you add the following to the `.vscode/launch.json` file:
+
+```jsonc
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Program",
+      "program": "${workspaceFolder}/src/index.ts",
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "env": {
+        // "SMARTMETER_SOCKET": "192.168.94.12:3020",
+        "SMARTMETER_DEBUG": "true",
+        "SMARTMETER_web-server": "3000",
+        "SMARTMETER_tcp-server": "3010",
+        "SMARTMETER_raw-tcp-server": "3020",
+        "SMARTMETER_mqtt-url": "mqtt://localhost:1883",
+        //"SMARTMETER_enc-key": "AAAA57A9FC71698E193D7CF6103CAAAA"
+        //"SMARTMETER_sunspec-modbus": "192.168.1.30"
+
+      }
+    }
+  ]
+}
+```
+
+I have one instance running, that outputs a raw tcp socket that I use for debugging on my computer.
+
 ### Support for output X
 
 This package comes with several outputs, they all extend [Output](https://github.com/svrooij/smartmeter2mqtt/blob/master/src/output/output.ts).

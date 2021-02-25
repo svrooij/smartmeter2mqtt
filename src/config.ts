@@ -3,11 +3,16 @@ import fs from 'fs';
 import path from 'path';
 
 export interface HttpPostConfig {
-  fields: string;
+  fields?: Array<string>;
   interval: number;
   json: boolean;
   url: string;
 }
+
+const defaultHttpPostConfig: Partial<HttpPostConfig> = {
+  fields: ['powerTs', 'totalT1Use', 'totalT1Delivered', 'totalT2Use', 'totalT1Delivered', 'gas_totalUse', 'gas_ts'],
+  interval: 300,
+};
 
 export interface MqttConfig {
   discovery: boolean;
@@ -17,6 +22,14 @@ export interface MqttConfig {
   prefix: string;
   url: string;
 }
+
+const defaultMqttConfig: Partial<MqttConfig> = {
+  discovery: false,
+  discoveryPrefix: 'homeassistant',
+  distinct: false,
+  distinctFields: ['currentTarrif', 'totalT1Use', 'totalT2Use', 'totalT1Delivered', 'totalT2Delivered', 'powerSn', 'currentUsage', 'currentDelivery'],
+  prefix: 'smartmeter',
+};
 
 export interface SunspecConfig {
   host: string;
@@ -32,16 +45,49 @@ export interface OutputConfig {
   webserver?: number;
 }
 
+export interface EncryptionConfig {
+  aad: string;
+  key: string;
+}
+
 export interface Config {
   serialPort?: string;
   socket?: string;
+
+  encryption?: EncryptionConfig;
 
   outputs: OutputConfig;
   solar?: SunspecConfig;
 }
 
+const defaultConfig: Config = {
+  outputs: {
+    debug: false,
+  },
+};
+
+const defaultEncryptionAad = '3000112233445566778899AABBCCDDEEFF';
+
 export class ConfigLoader {
   public static Load(): Config {
+    const config = { ...defaultConfig, ...(ConfigLoader.LoadConfigFromFile() ?? ConfigLoader.LoadConfigFromArguments()) };
+
+    if (config.outputs.mqtt) {
+      config.outputs.mqtt = { ...defaultMqttConfig, ...config.outputs.mqtt };
+    }
+
+    if (config.outputs.post) {
+      config.outputs.post = { ...defaultHttpPostConfig, ...config.outputs.post };
+    }
+
+    if (config.encryption && !config.encryption.aad) {
+      config.encryption.aad = defaultEncryptionAad;
+    }
+
+    return config;
+  }
+
+  public static LoadConfigFromArguments(): Partial<Config> {
     const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json')).toString());
     const args = yargs
       .env('SMARTMETER')
@@ -56,12 +102,15 @@ export class ConfigLoader {
       .describe('post-url', 'Post the results to this url')
       .describe('post-interval', 'Seconds between posts')
       .describe('post-json', 'Post the data as json instead of form parameters')
+      .describe('post-fields', 'Fields to post')
+      .string('post-fields')
       .boolean('post-json')
       .describe('mqtt-url', 'Send the data to this mqtt server')
       .describe('mqtt-topic', 'Use this topic prefix for all messages')
       .describe('mqtt-distinct', 'Publish data distinct to mqtt')
       .boolean('mqtt-distinct')
       .describe('mqtt-distinct-fields', 'A comma separated list of fields you want published distinct.')
+      .string('mqtt-distinct-fields')
       .describe('mqtt-discovery', 'Emit auto-discovery message')
       .boolean('mqtt-discovery')
       .describe('mqtt-discovery-prefix', 'Autodiscovery prefix')
@@ -77,15 +126,19 @@ export class ConfigLoader {
       .number('tcp-server')
       .number('raw-tcp-server')
       .number('post-interval')
+      .describe('enc-aad', 'Additional authentication data, if your meter encrypts data (eg. Luxemburg)')
+      .string('enc-aad')
+      .describe('enc-key', 'Decryption key. Request from energy company')
+      .string('enc-key')
       .alias({
         h: 'help',
       })
       .default({
-        'post-interval': 300,
-        'mqtt-topic': 'smartmeter',
-        'mqtt-discovery-prefix': 'homeassistant',
+        'post-interval': defaultHttpPostConfig.interval ?? 300,
+        'mqtt-topic': defaultMqttConfig.prefix ?? 'smartmeter',
+        'mqtt-discovery-prefix': defaultMqttConfig.discoveryPrefix ?? 'homeassistant',
         'sunspec-modbus-port': 502,
-        'mqtt-distinct-fields': 'currentTarrif,totalT1Use,totalT2Use,totalT1Delivered,totalT2Delivered,powerSn,currentUsage,currentDelivery',
+        'enc-aad': defaultEncryptionAad,
       })
       .wrap(80)
       .version()
@@ -109,7 +162,7 @@ export class ConfigLoader {
         discovery: args['mqtt-discovery'] === true,
         discoveryPrefix: args['mqtt-discovery-prefix'] ?? 'homeassistant',
         distinct: args['mqtt-distinct'] === true,
-        distinctFields: args['mqtt-distinct-fields'].split(','),
+        distinctFields: args['mqtt-distinct-fields']?.split(',') ?? defaultMqttConfig.distinctFields ?? [],
         prefix: args['mqtt-topic'] ?? 'smartmeter',
         url: args['mqtt-url'],
       };
@@ -117,7 +170,7 @@ export class ConfigLoader {
 
     if (typeof args['post-url'] === 'string') {
       config.outputs.post = {
-        fields: 'powerTs,totalT1Use,totalT1Delivered,totalT2Use,totalT1Delivered,gas_totalUse,gas_ts', // Make configurable
+        fields: args['post-fields']?.split(','),
         interval: args['post-interval'],
         json: args['post-json'] === true,
         url: args['post-url'],
@@ -139,6 +192,23 @@ export class ConfigLoader {
       } as SunspecConfig;
     }
 
+    if (args['enc-key']) {
+      config.encryption = {
+        aad: args['enc-aad'],
+        key: args['enc-key'],
+      };
+    }
+
     return config;
+  }
+
+  private static LoadConfigFromFile(): Partial<Config> | undefined {
+    // https://developers.home-assistant.io/docs/hassio_addon_config
+    if (process.env.CONFIG_PATH === undefined) process.env.CONFIG_PATH = '/data/options.json';
+    if (fs.existsSync(process.env.CONFIG_PATH)) {
+      const fileContent = fs.readFileSync(process.env.CONFIG_PATH).toString();
+      return JSON.parse(fileContent) as Partial<Config>;
+    }
+    return undefined;
   }
 }

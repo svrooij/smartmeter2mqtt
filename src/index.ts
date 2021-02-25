@@ -18,12 +18,12 @@ class Smartmeter {
   private config = ConfigLoader.Load();
 
   constructor() {
-    this.reader = new P1Reader();
     console.clear();
     console.log('----------------------------------------');
     console.log('- Smartmeter2mqtt by Stephan van Rooij -');
     console.log('- Press CTRL+C to close                -');
     console.log('----------------------------------------');
+    this.reader = new P1Reader(this.config.encryption);
   }
 
   public async start(): Promise<void> {
@@ -37,6 +37,9 @@ class Smartmeter {
         process.exit(3);
       }
       console.log('- Read from socket %s', this.config.socket);
+      if (this.config.encryption) {
+        console.log(' - Decryption is enabled');
+      }
       this.reader.startWithSocket(parts[0], parseInt(parts[1], 10));
     } else {
       console.warn('Port or socket required');
