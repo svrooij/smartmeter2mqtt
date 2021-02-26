@@ -59,6 +59,20 @@ After changing somehting you should run the tests (as they are automatically run
 
 This library has several VSCode tasks defined, be sure to change your port/socket in the `.vscode/launch.json` file. If you open an example file and press **F5** the example is run and you can set breakpoints in the sample code and in the TypeScript code.
 
+## Live-reload documentation
+
+This documentation is build from markdown files. It uses [Jekyll](https://jekyllrb.com/) to generate html files from markdown. For those who don't have ruby on their computer (like me), I've included a docker-compose that is setup to enable live-reloading the documentation.
+
+```bash
+# Go to docs root folder
+cd docs
+
+# Start docker container (first time takes longer because of package downloading).
+docker-compose up
+```
+
+Your documentation should be up at [localhost:4000](http://localhost:4000) and your browser will refresh on save.
+
 ## Repository content
 
 - **docs/** These documentations

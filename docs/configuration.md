@@ -16,11 +16,11 @@ You can configure a lot of stuff with this library. Either the port or the socke
 |:---- |:-------- |:------------------------------------- |:----------- |
 | Socket  | `--socket` | `SOCKET` | See connect over [tcp socket](connect.html#1-p1-to-tcp-socket) |
 | Port | `--port` | `PORT` | See connect over [usb](connect.html#2-p1-to-usb) |
-| MQTT (output) | `--mqtt-url` | `MQTT-URL` | **mqtt-url** publish parsed dsmr messages to your mqtt server. See [mqtt](/outputs/mqtt.html) for more info. |
-| Web server (output) | `--web-server` | `WEB-SERVER` | **number** start a [webserver](/outputs/webserver.html) at this port. |
-| JSON socket (output) | `--tcp-server` | `TCP-SERVER` | **number** start a [json socket](/outputs/socket.html#json-socket) at this port. |
-| RAW socket (output) | `--raw-tcp-server` | `RAW-TCP-SERVER` | **number** start a [raw socket](/outputs/socket.html#raw-socket) at this port. Can be used for daisy-chaining. |
-| Post to url (output) | `--post-url` | `POST-URL` | **url** post the parsed data to this url, see [post output](/outputs/post-to-url.html) for more information |
+| MQTT (output) | `--mqtt-url` | `MQTT-URL` | **mqtt-url** publish parsed dsmr messages to your mqtt server. See [mqtt](outputs/mqtt.html) for more info. |
+| Web server (output) | `--web-server` | `WEB-SERVER` | **number** start a [webserver](outputs/webserver.html) at this port. |
+| JSON socket (output) | `--tcp-server` | `TCP-SERVER` | **number** start a [json socket](outputs/socket.html#json-socket) at this port. |
+| RAW socket (output) | `--raw-tcp-server` | `RAW-TCP-SERVER` | **number** start a [raw socket](outputs/socket.html#raw-socket) at this port. Can be used for daisy-chaining. |
+| Post to url (output) | `--post-url` | `POST-URL` | **url** post the parsed data to this url, see [post output](outputs/post-to-url.html) for more information |
 
 ## configure with arguments
 

@@ -38,6 +38,11 @@ describe('P1Map', function () {
     expect(result?.name).to.be.eq('powerTs', 'name is incorrect')
   })
 
+  it('returns undefined for empty string', () => {
+    const result = P1Map.parseLine('');
+    expect(result).to.be.undefined;
+  })
+
   it('should have unique ids', function () {
     const ids = P1Map.mapping.map((val) => val.id)
 
