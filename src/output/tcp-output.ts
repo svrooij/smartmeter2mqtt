@@ -22,7 +22,7 @@ export default class TcpOutput extends Output {
       });
     } else {
       p1Reader.on(P1ReaderEvents.ParsedResult, (data) => {
-        this.server?.publishAsJson(data, '\n');
+        this.server?.publishAsJson(data, '\r\n');
       });
     }
 
