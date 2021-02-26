@@ -11,22 +11,24 @@ permalink: /
 # Smartmeter2mqtt
 
 [![Smartmeter2mqtt documentation][badge_smartmeter-docs]][link_smartmeter-docs]
-[![Support me on Github][badge_sponsor]][link_sponsor]
-
 [![npm][badge_npm]][link_npm]
 [![docker pulls][badge_docker]][link_docker]
-[![Run tests and publish][badge_build]][link_build]
+[![Support me on Github][badge_sponsor]][link_sponsor]
+
 [![github issues][badge_issues]][link_issues]
+[![Run tests and publish][badge_build]][link_build]
+[![Coverage Status][badge_coveralls]][link_coveralls]
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg?style=flat-square)](//github.com/semantic-release/semantic-release)
 
 An application that parses smartmeter data over the network or a P1 cable.
 
 ## Key features
 
-- [x] Connect to smartmeter over p1 cable or p1-to-socket device.
-- [x] Parse DSMR data
-- [x] Output socket to daisy-chain other applications
-- [x] Decrypt Luxemburg smartmeter data
+- Connect to smartmeter over [p1 cable](connect.html#2-p1-to-usb) or [p1-to-socket](connect.html#1-p1-to-tcp-socket) device.
+- Parse DSMR data
+- Website with real-time-data (over websockets)
+- [Output socket](outputs/socket.html#raw-socket) to daisy-chain other applications
+- [Decrypt](advanced/decryption.html) Luxemburg smartmeter data
 
 ## Get Started
 
@@ -34,7 +36,7 @@ You can run this application in several way, docker (compose) is the recommended
 
 ### Choose smartmeter connection
 
-You need to get either a [p1-to-tcp](connect.html#2-p1-to-usb) or a [p1-to-usb](connect.html#2-p1-to-usb) device.
+You need to get either a [p1-to-tcp](connect.html#2-p1-to-usb) or a [p1-to-usb](connect.html#1-p1-to-tcp-socket) device.
 
 ## Docker
 
@@ -109,6 +111,7 @@ You don't need docker to run this app, you can also install the app locally and 
 4. Configure to run in background see stackoverflow answer.
 
 [badge_build]: https://github.com/svrooij/smartmeter2mqtt/workflows/Run%20tests%20and%20publish/badge.svg
+[badge_coveralls]: https://coveralls.io/repos/github/svrooij/smartmeter2mqtt/badge.svg?branch=master
 [badge_docker]: https://img.shields.io/docker/pulls/svrooij/smartmeter?style=flat-square
 [badge_issues]: https://img.shields.io/github/issues/svrooij/smartmeter2mqtt?style=flat-square
 [badge_npm]: https://img.shields.io/npm/v/smartmeter2mqtt?style=flat-square
@@ -116,6 +119,7 @@ You don't need docker to run this app, you can also install the app locally and 
 [badge_sponsor]: https://img.shields.io/badge/Sponsor-on%20Github-red?style=flat-square
 
 [link_build]: https://github.com/svrooij/smartmeter2mqtt/actions
+[link_coveralls]: https://coveralls.io/github/svrooij/smartmeter2mqtt?branch=master
 [link_docker]: https://hub.docker.com/r/svrooij/smartmeter
 [link_issues]: https://github.com/svrooij/smartmeter2mqtt/issues
 [link_npm]: https://www.npmjs.com/package/smartmeter2mqtt
