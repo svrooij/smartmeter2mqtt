@@ -65,28 +65,28 @@ interface DsmrMessageBase {
    */
   powerTs?: string;
   /**
-   * 
+   *
    *
    * @type {number}
    * @memberof DsmrMessageBase
    */
   totalExportedEnergyP?: number;
   /**
-   * 
+   *
    *
    * @type {number}
    * @memberof DsmrMessageBase
    */
   totalExportedEnergyQ?: number;
   /**
-   * 
+   *
    *
    * @type {number}
    * @memberof DsmrMessageBase
    */
   totalImportedEnergyP?: number;
   /**
-   * 
+   *
    *
    * @type {number}
    * @memberof DsmrMessageBase

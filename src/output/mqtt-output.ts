@@ -145,8 +145,8 @@ export default class MqttOutput extends Output {
       device.name = 'Total power used T1';
       this.mqtt?.publish(`${this.config.discoveryPrefix}/sensor/smartmeter/t1-used/config`, JSON.stringify(device), { qos: 0, retain: true });
     }
-    
-    if(data.totalT2Use) {
+
+    if (data.totalT2Use) {
       // Total T2
       device.unique_id = `smartmeter_${data.powerSn}_total_t2_used`;
       device.unit_of_measurement = 'kWh';
