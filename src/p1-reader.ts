@@ -62,7 +62,7 @@ export default class P1Reader extends EventEmitter {
 
   public startWithSerialPort(path: string, baudRate = 115200): void {
     if (this.reading) throw new Error('Already reading');
-    this.serialPort = new SerialPort(path, { baudRate  });
+    this.serialPort = new SerialPort(path, { baudRate });
     if (this.encryption) {
       this.serialPort.on('data', (data) => {
         if (this.bufferInterval) {
