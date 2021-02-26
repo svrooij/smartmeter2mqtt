@@ -42,10 +42,11 @@ export default class P1Parser {
       } else {
         const parsed = P1Map.parseLine(line);
         if (parsed && parsed.name) {
+          const name = parsed.name.startsWith('_') ? parsed.name.substr(1) : parsed.name;
           if (parsed.value !== undefined) {
-            this.partialData[parsed.name] = parsed.value;
+            this.partialData[name] = parsed.value;
           } else if (parsed.rawValues !== undefined) {
-            this.partialData[parsed.name] = parsed.rawValues;
+            this.partialData[name] = parsed.rawValues;
           }
         }
       }

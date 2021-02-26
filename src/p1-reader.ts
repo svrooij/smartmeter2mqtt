@@ -6,6 +6,7 @@ import P1ReaderEvents from './p1-reader-events';
 import DsmrMessage from './dsmr-message';
 import SolarInput from './solar-input';
 import GasValue from './gas-value';
+import P1Crypt from './p1-crypt';
 
 export default class P1Reader extends EventEmitter {
   private usage: number;
@@ -36,10 +37,15 @@ export default class P1Reader extends EventEmitter {
 
   private bufferInterval?: NodeJS.Timeout;
 
+  // Encryption
+  private encryption = false;
+
+  private crypt?: P1Crypt;
+
   // Inverter stuff
   private solarInput?: SolarInput;
 
-  constructor() {
+  constructor(options?: { key: string; aad: string}) {
     super();
     this.usage = 0;
     this.gasUsage = 0;
@@ -47,6 +53,11 @@ export default class P1Reader extends EventEmitter {
     this.gasReadingTimestamp = 0;
     this.reading = false;
     this.parsing = false;
+
+    if (options && options.key) {
+      this.encryption = true;
+      this.crypt = new P1Crypt(options.key, options.aad);
+    }
   }
 
   public startWithSerialPort(path: string, baudRate = 115200): void {
@@ -63,19 +74,20 @@ export default class P1Reader extends EventEmitter {
 
   public startWithSocket(host: string, port: number): void {
     this.socket = new Socket();
+    this.socket.setTimeout(60 * 1000, () => {
+      console.warn('Socket timeout');
+      this.socket?.end();
+      process.exit(100);
+    });
     this.socket.connect(port, host);
-    this.socket.setEncoding('ascii');
+    this.socket.setEncoding(this.encryption === true ? 'hex' : 'ascii');
     this.socket.on('data', (data) => {
       if (this.bufferInterval) {
         clearTimeout(this.bufferInterval);
       }
       this.dataBuffer += data.toString();
       this.bufferInterval = setTimeout(() => {
-        const lines = this.dataBuffer.trim().split('\r\n');
-        lines.forEach((line) => {
-          this.emit(P1ReaderEvents.Line, line);
-        });
-        this.dataBuffer = '';
+        this.processBuffer();
       }, 100);
     });
 
@@ -83,6 +95,19 @@ export default class P1Reader extends EventEmitter {
       console.warn('Socket connection closed');
       process.exit(10);
     });
+  }
+
+  private processBuffer(): void {
+    const data = this.encryption === true
+      ? this.crypt?.decryptToDsmr(this.dataBuffer)?.message
+      : this.dataBuffer;
+    if (data !== undefined && data !== '') {
+      const lines = data.trim().split('\r\n');
+      lines.forEach((line) => {
+        this.emit(P1ReaderEvents.Line, line);
+      });
+    }
+    this.dataBuffer = '';
   }
 
   public startParsing(): void {

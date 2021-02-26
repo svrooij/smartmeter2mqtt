@@ -50,7 +50,7 @@ describe('WebServer', () => {
 describe('HttpOutput', () => {
   it('Should subscribe to Parsed result event', () => {
     const fakeReader = new P1Reader()
-    const httpOutput = new HttpOutput({ fields: '', url: '', json: true, interval: 30 })
+    const httpOutput = new HttpOutput({ url: '', json: true, interval: 30 })
     httpOutput.start(fakeReader)
     expect(fakeReader.listenerCount(P1ReaderEvents.ParsedResult)).to.be.eq(1, 'HttpOutput not subscribed to ParsedResult event')
     httpOutput.close()

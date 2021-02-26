@@ -82,26 +82,31 @@ export default class P1Map {
     { id: '0-0:1.0.0', name: 'powerTs', valueRetriever: P1Map.parseFirstTimestamp },
     { id: '0-0:96.1.1', name: 'powerSn', valueRetriever: P1Map.getFirstString },
     { id: '0-0:96.14.0', name: 'currentTarrif', valueRetriever: P1Map.parseFirstInt },
+    { id: '0-0:96.3.10', name: 'breakerControlState', valueRetriever: P1Map.parseFirstInt },
     { id: '0-0:96.7.21', name: 'powerFailures', valueRetriever: P1Map.parseFirstInt },
     { id: '0-0:96.7.9', name: 'longPowerFailures', valueRetriever: P1Map.parseFirstInt },
-    { id: '0-1:24.1.0', name: 'xDeviceType', valueRetriever: P1Map.getFirstString }, // XMX5
-    { id: '0-1:24.2.1', name: 'xGas', valueRetriever: P1Map.parseGasValue }, // XMX5
-    { id: '0-1:96.1.0', name: 'xGasSn', valueRetriever: P1Map.getFirstString }, // XMX5
+    { id: '0-1:24.1.0', name: '_deviceType', valueRetriever: P1Map.getFirstString }, // XMX5
+    { id: '0-1:24.2.1', name: '_gas', valueRetriever: P1Map.parseGasValue }, // XMX5
+    { id: '0-1:96.1.0', name: '_gasSn', valueRetriever: P1Map.getFirstString }, // XMX5
     { id: '0-2:24.1.0', name: 'deviceType', valueRetriever: P1Map.getFirstString },
     { id: '0-2:24.2.1', name: 'gas', valueRetriever: P1Map.parseGasValue },
     { id: '0-2:96.1.0', name: 'gasSn', valueRetriever: P1Map.getFirstString },
     { id: '1-0:1.7.0', name: 'currentUsage', valueRetriever: P1Map.parseFirstFloat },
+    { id: '1-0:1.8.0', name: 'totalImportedEnergyP', valueRetriever: P1Map.parseFirstFloat },
     { id: '1-0:1.8.1', name: 'totalT1Use', valueRetriever: P1Map.parseFirstFloat },
     { id: '1-0:1.8.2', name: 'totalT2Use', valueRetriever: P1Map.parseFirstFloat },
     { id: '1-0:2.7.0', name: 'currentDelivery', valueRetriever: P1Map.parseFirstFloat },
+    { id: '1-0:2.8.0', name: 'totalExportedEnergyP', valueRetriever: P1Map.parseFirstFloat },
     { id: '1-0:2.8.1', name: 'totalT1Delivered', valueRetriever: P1Map.parseFirstFloat },
     { id: '1-0:2.8.2', name: 'totalT2Delivered', valueRetriever: P1Map.parseFirstFloat },
     { id: '1-0:21.7.0', name: 'currentUsageL1', valueRetriever: P1Map.parseFirstFloat },
     { id: '1-0:22.7.0', name: 'currentDeliveryL1', valueRetriever: P1Map.parseFirstFloat },
+    { id: '1-0:3.8.0', name: 'totalImportedEnergyQ', valueRetriever: P1Map.parseFirstFloat },
     { id: '1-0:31.7.0', name: 'currentL1', valueRetriever: P1Map.parseFirstFloat },
     { id: '1-0:32.32.0', name: 'voltageSagsL1', valueRetriever: P1Map.parseFirstInt },
     { id: '1-0:32.36.0', name: 'voltageSwellsL1', valueRetriever: P1Map.parseFirstInt },
     { id: '1-0:32.7.0', name: 'voltageL1', valueRetriever: P1Map.parseFirstFloat }, // XMX5
+    { id: '1-0:4.8.0', name: 'totalExportedEnergyQ', valueRetriever: P1Map.parseFirstFloat },
     { id: '1-0:41.7.0', name: 'currentUsageL2', valueRetriever: P1Map.parseFirstFloat },
     { id: '1-0:42.7.0', name: 'currentDeliveryL2', valueRetriever: P1Map.parseFirstFloat },
     { id: '1-0:51.7.0', name: 'currentL2', valueRetriever: P1Map.parseFirstFloat },

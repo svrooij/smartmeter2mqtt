@@ -1,0 +1,18 @@
+
+{% assign network_readers = site.data.readers.socket | sort: 'name' %}
+<table>
+  <thead>
+    <tr><th>Name</th><th>Connection</th><th>Power</th><th>Buy</th><th>Creator</th></tr>
+  </thead>
+  <tbody>
+    {% for reader in network_readers %}
+    <tr>
+      <td><a href="{{ reader.link | default: reader.buy }}">{{ reader.name }}</a></td>
+      <td>{{ reader.connection }}</td>
+      <td>{% if reader.meterPowered %} <span title="Meter powered">🎛</span> / {% endif %}{% if reader.usbPowered %}<span title="usb powered">🔌</span>{% endif %}</td>
+      <td><a href="{{ reader.buy }}">Buy {{ reader.name }}</a></td>
+      <td><a href="{{ reader.creator.link | default: reader.buy }}">{{ reader.creator.name | default: '?' }}</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

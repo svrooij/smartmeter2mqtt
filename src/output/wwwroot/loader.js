@@ -68,17 +68,25 @@ function updateData(data) {
 
   $('.currentUsage').text(data.currentUsage || 0);
   $('.currentDelivery').text(data.currentDelivery || 0);
-  $('.totalT1Usage').text(Math.round(data.totalT1Use || 0));
+  $('.totalT1Usage').text(Math.round(data.totalT1Use || data.totalImportedEnergyP || 0));
   $('.totalT2Usage').text(Math.round(data.totalT2Use || 0));
-  $('.totalT1Delivered').text(Math.round(data.totalT1Delivered || 0));
+  $('.totalT1Delivered').text(Math.round(data.totalT1Delivered || data.totalExportedEnergyQ || 0));
   $('.totalT2Delivered').text(Math.round(data.totalT2Delivered || 0));
+
+  if (data.totalT2Use === undefined) {
+    $('#tarrif2').hide();
+  }
+
+  if (data.totalExportedEnergyQ) {
+    $('.totalT1DeliveredUnit').text('kvarh');
+  }
 
   $('.powerLabel').attr('title', data.powerSn);
   $('.powerTs').text(data.powerTs);
 
   $('.gasLabel').attr('title', data.gasSn);
-  $('.gasTs').text(data.gas.ts);
-  let gas = data.gas.totalUse;
+  $('.gasTs').text(data.gas?.ts);
+  let gas = data.gas?.totalUse;
   gas = Math.round(gas * 100.0) / 100.0;
   $('.totalGas').text(gas);
 

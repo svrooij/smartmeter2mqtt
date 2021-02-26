@@ -8,15 +8,12 @@ import DsmrMessage from '../dsmr-message';
 import GasValue from '../gas-value';
 
 export default class HttpOutput extends IntervalOutput {
-  private fields?: Array<string>;
-
   constructor(private config: HttpPostConfig) {
     super(config.interval);
   }
 
   start(p1Reader: P1Reader): void {
     super.start(p1Reader);
-    this.fields = this.config.fields.split(',');
     this.on(P1ReaderEvents.ParsedResult, (data) => this.sendEvent(data)
       .then((result) => {
         if (!result.ok) {
@@ -29,7 +26,7 @@ export default class HttpOutput extends IntervalOutput {
   }
 
   private sendEvent(data: DsmrMessage): Promise<Response> {
-    const flatData = this.fields
+    const flatData = this.config.fields
       ? this.filterData(HttpOutput.flatten(data))
       : HttpOutput.flatten(data);
 
@@ -47,13 +44,12 @@ export default class HttpOutput extends IntervalOutput {
   }
 
   private filterData(data: DsmrMessage): {[key: string]: string | number | Array<string> | GasValue | boolean | undefined} {
-    if (this.fields === undefined) {
+    if (this.config.fields === undefined) {
       return data;
     }
     const result: {[key: string]: string | number | Array<string> | GasValue | boolean | undefined} = {};
-    const { fields } = this;
     Object.keys(data)
-      .filter((key) => fields.includes(key))
+      .filter((key) => this.config.fields?.includes(key))
       .forEach((key) => {
         result[key] = data[key];
       });
