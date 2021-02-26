@@ -12,7 +12,7 @@ Smartmeters in Luxemborg are encrypting DSMR messages on the P1 port. You can re
 
 If you want to enable decrypting you only have to set the key, as argument `--enc-key` or as environment variable `SMARTMETER_ENC-KEY` and once you restart it will automatically decrypt and validate the messages.
 
-If you enable the [raw tcp socket](/outputs/socket.html#raw-socket) you can just this application just for decrypting the messages and forwarding them to some other application.
+If you enable the [raw tcp socket](../outputs/socket.html#raw-socket) you can just this application just for decrypting the messages and forwarding them to some other application.
 
 ### Encryption specs
 

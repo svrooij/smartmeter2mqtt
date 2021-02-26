@@ -158,7 +158,7 @@ You can enable the webserver. This will enable you to see a simple webpage with 
 
 This webpage uses WebSockets for automatic server side data refresh. So the browser will show the latest data as it comes in. If your browser doesn't support websockets it should fallback on ajax loading.
 
-![Screenshot of web interface](./screenshots/screenshot_web.png "Web interface demo")
+![Screenshot of web interface](./docs/assets/images/screenshot_web.png "Web interface demo")
 
 ### Output -> JSON tcp socket
 

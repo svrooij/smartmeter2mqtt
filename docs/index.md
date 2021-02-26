@@ -34,11 +34,11 @@ You can run this application in several way, docker (compose) is the recommended
 
 ### Choose smartmeter connection
 
-You need to get either a [p1-to-tcp](/connect.html#2-p1-to-usb) or a [p1-to-usb](/connect.html#2-p1-to-usb) device.
+You need to get either a [p1-to-tcp](connect.html#2-p1-to-usb) or a [p1-to-usb](connect.html#2-p1-to-usb) device.
 
 ## Docker
 
-My setup is a Raspberry Pi 3 model b rev 1.2 (See `cat /proc/cpuinfo`) with a [P1 cable](#p1-cable) running [Hypriot](https://blog.hypriot.com/downloads/) as an OS (because of the pre-configured docker/docker-compose).
+My setup is a Raspberry Pi 3 model b rev 1.2 (See `cat /proc/cpuinfo`) with a [P1 cable](connect.html#2-p1-to-usb) running [Hypriot](https://blog.hypriot.com/downloads/) as an OS (because of the pre-configured docker/docker-compose).
 
 The [docker image](https://hub.docker.com/r/svrooij/smartmeter) is currently automatically build from every new release. We support the following platforms (can be extended if we have someone willing to test it out):
 

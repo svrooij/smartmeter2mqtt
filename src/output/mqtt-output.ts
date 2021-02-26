@@ -121,33 +121,57 @@ export default class MqttOutput extends Output {
 
     delete device.icon;
 
-    // Total T1
-    device.unique_id = `smartmeter_${data.powerSn}_total_t1_used`;
-    device.unit_of_measurement = 'kWh';
-    device.value_template = '{{value_json.totalT1Use}}';
-    device.name = 'Total power used T1';
-    this.mqtt?.publish(`${this.config.discoveryPrefix}/sensor/smartmeter/t1-used/config`, JSON.stringify(device), { qos: 0, retain: true });
+    if (data.totalImportedEnergyP) {
+      device.unique_id = `smartmeter_${data.powerSn}_total_imported`;
+      device.unit_of_measurement = 'kWh';
+      device.value_template = '{{value_json.totalImportedEnergyP}}';
+      device.name = 'Total power imported';
+      this.mqtt?.publish(`${this.config.discoveryPrefix}/sensor/smartmeter/power-imported/config`, JSON.stringify(device), { qos: 0, retain: true });
+    }
 
-    // Total T2
-    device.unique_id = `smartmeter_${data.powerSn}_total_t2_used`;
-    device.unit_of_measurement = 'kWh';
-    device.value_template = '{{value_json.totalT2Use}}';
-    device.name = 'Total power used T2';
-    this.mqtt?.publish(`${this.config.discoveryPrefix}/sensor/smartmeter/t2-used/config`, JSON.stringify(device), { qos: 0, retain: true });
+    if (data.totalExportedEnergyQ) {
+      device.unique_id = `smartmeter_${data.powerSn}_total_exported`;
+      device.unit_of_measurement = 'kvarh';
+      device.value_template = '{{value_json.totalExportedEnergyQ}}';
+      device.name = 'Total power exported';
+      this.mqtt?.publish(`${this.config.discoveryPrefix}/sensor/smartmeter/power-exported/config`, JSON.stringify(device), { qos: 0, retain: true });
+    }
 
-    // Total T1 delivered
-    device.unique_id = `smartmeter_${data.powerSn}_total_t1_delivered`;
-    device.unit_of_measurement = 'kWh';
-    device.value_template = '{{value_json.totalT1Delivered}}';
-    device.name = 'Total power delivered T1';
-    this.mqtt?.publish(`${this.config.discoveryPrefix}/sensor/smartmeter/t1-delivered/config`, JSON.stringify(device), { qos: 0, retain: true });
+    if (data.totalT1Use) {
+      // Total T1
+      device.unique_id = `smartmeter_${data.powerSn}_total_t1_used`;
+      device.unit_of_measurement = 'kWh';
+      device.value_template = '{{value_json.totalT1Use}}';
+      device.name = 'Total power used T1';
+      this.mqtt?.publish(`${this.config.discoveryPrefix}/sensor/smartmeter/t1-used/config`, JSON.stringify(device), { qos: 0, retain: true });
+    }
+    
+    if(data.totalT2Use) {
+      // Total T2
+      device.unique_id = `smartmeter_${data.powerSn}_total_t2_used`;
+      device.unit_of_measurement = 'kWh';
+      device.value_template = '{{value_json.totalT2Use}}';
+      device.name = 'Total power used T2';
+      this.mqtt?.publish(`${this.config.discoveryPrefix}/sensor/smartmeter/t2-used/config`, JSON.stringify(device), { qos: 0, retain: true });
+    }
 
-    // Total T1 delivered
-    device.unique_id = `smartmeter_${data.powerSn}_total_t2_delivered`;
-    device.unit_of_measurement = 'kWh';
-    device.value_template = '{{value_json.totalT2Delivered}}';
-    device.name = 'Total power delivered T2';
-    this.mqtt?.publish(`${this.config.discoveryPrefix}/sensor/smartmeter/t2-delivered/config`, JSON.stringify(device), { qos: 0, retain: true });
+    if (data.totalT1Delivered) {
+      // Total T1 delivered
+      device.unique_id = `smartmeter_${data.powerSn}_total_t1_delivered`;
+      device.unit_of_measurement = 'kWh';
+      device.value_template = '{{value_json.totalT1Delivered}}';
+      device.name = 'Total power delivered T1';
+      this.mqtt?.publish(`${this.config.discoveryPrefix}/sensor/smartmeter/t1-delivered/config`, JSON.stringify(device), { qos: 0, retain: true });
+    }
+
+    if (data.totalT2Delivered) {
+      // Total T2 delivered
+      device.unique_id = `smartmeter_${data.powerSn}_total_t2_delivered`;
+      device.unit_of_measurement = 'kWh';
+      device.value_template = '{{value_json.totalT2Delivered}}';
+      device.name = 'Total power delivered T2';
+      this.mqtt?.publish(`${this.config.discoveryPrefix}/sensor/smartmeter/t2-delivered/config`, JSON.stringify(device), { qos: 0, retain: true });
+    }
 
     // Total Gas used
     if (data.gasSn) {

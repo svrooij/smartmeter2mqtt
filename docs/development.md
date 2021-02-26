@@ -22,7 +22,7 @@ This library is hosted on [Github](https://github.com/svrooij/smartmeter2mqtt), 
 
 You should start by creating a [fork](https://github.com/svrooij/smartmeter2mqtt/fork). Or if you already had a fork sync the fork:
 
-```shell
+```bash
 # Add the remote, call it "upstream": (only once)
 git remote add upstream https://github.com/svrooij/smartmeter2mqtt.git
 

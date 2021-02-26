@@ -8,7 +8,7 @@ parent: Outputs
 
 You can have this application expose several sockets. It will start a tcp socket at the specific port that will emit data as it comes in.
 
-![Awesome illustration from undraw.co](/assets/images/undraw_data_processing_yrrv.svg)
+![Awesome illustration from undraw.co](../assets/images/undraw_data_processing_yrrv.svg)
 
 ## JSON socket
 

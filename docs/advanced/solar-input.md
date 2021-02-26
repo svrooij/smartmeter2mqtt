@@ -12,11 +12,11 @@ This library can also read current solar production from an inverter supporting 
 
 By reading data from the solar panel as well, the properties `houseUsage` and `solarProduction` will become available. The first one is computed as follows `solarProduction + calculatedUsage` if you're producing 1000 watt and the calculatedUsage is -400 (delivering 400 watt), the houseUsage must be 600 watt.
 
-![Screenshot of smartmeter2mqtt web page](/assets/images/screenshot_web-with-solar.png)
+![Screenshot of smartmeter2mqtt web page](../assets/images/screenshot_web-with-solar.png)
 
 ## SolarEdge
 
-SolarEdge invertors support the [SunSpec](https://www.solaredge.com/sites/default/files/sunspec-implementation-technical-note.pdf). That means you can turn on modbus over tcp on the inverter. You need to turn it on **and connect within 120 seconds**. After that modbus over tcp will stay on until you turn it off.
+SolarEdge invertors support the [SunSpec](https://www.solaredge.com/sites/default/files/sunspec-implementation-technical-note.pdf). That means you can turn on modbus over tcp on the inverter. You need to turn it on **and connect within 120 seconds**. After that modbus over tcp will stay on until you manually turn it off.
 
 Turn on reading data from this modbus port by starting this app with the argument `--sunspec-modbus` for the IP and optional `--sunspec-modbus-port` to specify the port (defaults to `502`).
 
@@ -48,7 +48,7 @@ After you enable solar input the webserver page will also show the **Solar Produ
 
 ## Mqtt
 
-The solar data will also be available in the [mqtt](/outputs/mqtt.html) output.
+The solar data will also be available in the [mqtt](../outputs/mqtt.html) output.
 
 ## Developer notes
 

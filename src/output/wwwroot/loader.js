@@ -84,9 +84,9 @@ function updateData(data) {
   $('.powerLabel').attr('title', data.powerSn);
   $('.powerTs').text(data.powerTs);
 
-  $('.gasLabel').attr('title', data.gasSn || data.xGasSn);
-  $('.gasTs').text(data.gas?.ts || data.xGas.ts);
-  let gas = data.gas?.totalUse || data.xGas.totalUse;
+  $('.gasLabel').attr('title', data.gasSn);
+  $('.gasTs').text(data.gas?.ts);
+  let gas = data.gas?.totalUse;
   gas = Math.round(gas * 100.0) / 100.0;
   $('.totalGas').text(gas);
 
