@@ -1,0 +1,38 @@
+{
+  "socket":[
+    {
+      "name": "P1 reader ethernet v3.2",
+      "connection": "Ethernet",
+      "meterPowered": true,
+      "usbPowered": true,
+      "link": "https://www.zuidwijk.com/p1-reader-ethernet-version/",
+      "buy": "https://www.zuidwijk.com/product/p1-reader-ethernet/",
+      "creator": {
+        "name": "Marcel Zuidwijk",
+        "link": "https://www.zuidwijk.com/"
+      }
+    },
+    {
+      "name": "Slimme lezer",
+      "connection": "Wifi",
+      "meterPowered": true,
+      "usbPowered": true,
+      "link": "https://www.zuidwijk.com/slimme-lezer-smart-reader/",
+      "buy": "https://www.zuidwijk.com/product/slimme-lezer-smart-reader/",
+      "creator": {
+        "name": "Marcel Zuidwijk",
+        "link": "https://www.zuidwijk.com/"
+      }
+    }
+  ],
+  "usb": [
+    {
+      "name": "Slimme meter kabel 1m",
+      "buy": "https://www.sossolutions.nl/slimme-meter-kabel",
+      "creator": {
+        "name": "SOS-Solutions",
+        "link": "https://www.sossolutions.nl/"
+      }
+    }
+  ] 
+}

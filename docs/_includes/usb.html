@@ -1,0 +1,16 @@
+
+{% assign usb_readers = site.data.readers.usb | sort: 'name' %}
+<table>
+  <thead>
+    <tr><th>Name</th><th>Buy</th><th>Creator</th></tr>
+  </thead>
+  <tbody>
+    {% for reader in usb_readers %}
+    <tr>
+      <td><a href="{{ reader.link | default: reader.buy }}">{{ reader.name }}</a></td>
+      <td><a href="{{ reader.buy }}">Buy {{ reader.name }}</a></td>
+      <td><a href="{{ reader.creator.link | default: reader.buy }}">{{ reader.creator.name | default: '?' }}</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
