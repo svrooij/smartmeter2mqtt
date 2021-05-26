@@ -6,7 +6,7 @@ import P1ReaderEvents from './p1-reader-events';
 import DsmrMessage from './dsmr-message';
 import SolarInput from './solar-input';
 import GasValue from './gas-value';
-import P1Crypt from './p1-crypt';
+import { P1Crypt } from './p1-crypt';
 
 export default class P1Reader extends EventEmitter {
   private usage: number;

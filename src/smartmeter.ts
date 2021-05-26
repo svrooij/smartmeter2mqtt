@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import P1Reader from './p1-reader';
 import { ConfigLoader } from './config';
 import Output from './output/output';
@@ -10,7 +8,7 @@ import HttpOutput from './output/http-output';
 import DebugOutput from './output/debug-output';
 import ModbusSolarInput from './modbus-solar-input';
 
-class Smartmeter {
+export class Smartmeter {
   private reader: P1Reader;
 
   private outputs: Array<Output> = [];
@@ -101,11 +99,3 @@ class Smartmeter {
     }
   }
 }
-
-const smartmeter = new Smartmeter();
-smartmeter.start();
-
-process.on('SIGINT', async () => {
-  console.log('Exiting....');
-  await smartmeter.stop();
-});

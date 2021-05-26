@@ -1,0 +1,12 @@
+#!/usr/bin/env node
+
+const Smartmeter = require('../dist/index.js').Smartmeter;
+
+const smartmeter = new Smartmeter();
+smartmeter.start();
+
+process.on('SIGINT', async () => {
+  console.log('Exiting....');
+  await smartmeter.stop();
+  process.exit(0);
+});

@@ -13,7 +13,7 @@
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "env": {
         // "SMARTMETER_PORT": "/dev/ttyUSB0",
-        // "SMARTMETER_SOCKET": "192.168.94.12:3020",
+        "SMARTMETER_SOCKET": "192.168.94.12:3020",
         "SMARTMETER_DEBUG": "true",
         "SMARTMETER_web-server": "3000",
         "SMARTMETER_tcp-server": "3010",

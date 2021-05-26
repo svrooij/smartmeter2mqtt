@@ -60,7 +60,7 @@
     "typescript": "^3.8.3"
   },
   "bin": {
-    "smartmeter2mqtt": "./dist/index.js"
+    "smartmeter2mqtt": "./bin/run"
   },
   "files": [
     "dist/**/*.js",
