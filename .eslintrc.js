@@ -18,6 +18,7 @@ module.exports = {
     "class-methods-use-this":"off",
     "max-len":"off",
     "no-console": "off",
-    "linebreak-style": "off"
+    "linebreak-style": "off",
+    "constructor-super": "warn"
   }
 };

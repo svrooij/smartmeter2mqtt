@@ -1,19 +1,17 @@
 import mqtt, { MqttClient, IClientOptions } from 'mqtt';
 import { SunspecResult } from '@svrooij/sunspec/lib/sunspec-result';
-import Output from './output';
-import P1ReaderEvents from '../p1-reader-events';
+import { Output } from './output';
 import { MqttConfig } from '../config';
 import P1Reader from '../p1-reader';
 import DsmrMessage from '../dsmr-message';
 
 
-export default class MqttOutput extends Output {
+export default class MqttOutput implements Output {
   private mqtt?: MqttClient;
 
   private discoverySend = false;
 
   constructor(private config: MqttConfig) {
-    super();
   }
 
   start(p1Reader: P1Reader): void {
@@ -22,7 +20,7 @@ export default class MqttOutput extends Output {
       this.mqtt?.publish(`${this.config.prefix}/connected`, '2', { qos: 0, retain: true });
     });
 
-    p1Reader.on(P1ReaderEvents.ParsedResult, (data) => {
+    p1Reader.on('dsmr', (data) => {
       this.publishData(data);
       if (this.config.discovery && !this.discoverySend) {
         this.publishAutoDiscovery(data);
@@ -30,15 +28,15 @@ export default class MqttOutput extends Output {
       }
     });
 
-    p1Reader.on(P1ReaderEvents.UsageChanged, (data) => {
+    p1Reader.on('usage', (data) => {
       this.publishUsage(data);
     });
 
-    p1Reader.on(P1ReaderEvents.GasUsageChanged, (data) => {
+    p1Reader.on('gasUsage', (data) => {
       this.publishGasUsage(data);
     });
 
-    p1Reader.on(P1ReaderEvents.SolarResult, (data) => {
+    p1Reader.on('solar', (data) => {
       this.publishSolar(data);
     });
   }

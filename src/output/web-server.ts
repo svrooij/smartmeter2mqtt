@@ -2,15 +2,14 @@ import http, { Server } from 'http';
 import WebSocket from 'ws';
 import path from 'path';
 import { SunspecResult } from '@svrooij/sunspec/lib/sunspec-result';
-import Output from './output';
-import P1ReaderEvents from '../p1-reader-events';
+import { Output } from './output';
 import P1Reader from '../p1-reader';
 import DsmrMessage from '../dsmr-message';
 
 import express = require('express');
 
 
-export default class WebServer extends Output {
+export default class WebServer implements Output {
   private server?: Server;
 
   private wsServer?: WebSocket.Server;
@@ -22,17 +21,17 @@ export default class WebServer extends Output {
   private checkTimeout?: NodeJS.Timeout;
 
   constructor(private readonly port: number, private readonly startServer = true) {
-    super();
+
   }
 
   start(p1Reader: P1Reader): void {
     if (p1Reader === undefined) throw new Error('p1Reader is undefined!');
 
-    p1Reader.on(P1ReaderEvents.ParsedResult, (data) => {
+    p1Reader.on('dsmr', (data) => {
       this.setReading(data);
     });
 
-    p1Reader.on(P1ReaderEvents.SolarResult, (data) => {
+    p1Reader.on('solar', (data) => {
       this.lastSolarReading = data;
     });
 

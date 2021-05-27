@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 const expect = chai.expect;
-import P1Crypt from '../src/p1-crypt';
+import { P1Crypt } from '../src/p1-crypt';
 import fs from 'fs';
 
 const fakeKey = 'ef3f65c8b6e4000dce8ba35f6af212e1';

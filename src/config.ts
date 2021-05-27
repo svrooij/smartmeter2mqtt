@@ -50,7 +50,7 @@ export interface EncryptionConfig {
   key: string;
 }
 
-export interface Config {
+export interface SmartmeterConfig {
   serialPort?: string;
   socket?: string;
 
@@ -60,7 +60,7 @@ export interface Config {
   solar?: SunspecConfig;
 }
 
-const defaultConfig: Config = {
+const defaultConfig: SmartmeterConfig = {
   outputs: {
     debug: false,
   },
@@ -69,7 +69,7 @@ const defaultConfig: Config = {
 const defaultEncryptionAad = '3000112233445566778899AABBCCDDEEFF';
 
 export class ConfigLoader {
-  public static Load(): Config {
+  public static Load(): SmartmeterConfig {
     const config = { ...defaultConfig, ...(ConfigLoader.LoadConfigFromFile() ?? ConfigLoader.LoadConfigFromArguments()) };
 
     if (config.outputs.mqtt) {
@@ -87,7 +87,7 @@ export class ConfigLoader {
     return config;
   }
 
-  public static LoadConfigFromArguments(): Partial<Config> {
+  public static LoadConfigFromArguments(): Partial<SmartmeterConfig> {
     const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json')).toString());
     const args = yargs
       .env('SMARTMETER')
@@ -151,7 +151,7 @@ export class ConfigLoader {
       outputs: {
         debug: args.debug === true,
       },
-    } as Config;
+    } as SmartmeterConfig;
 
     if (args['tcp-server']) {
       config.outputs.jsonSocket = args['tcp-server'];
@@ -202,12 +202,12 @@ export class ConfigLoader {
     return config;
   }
 
-  private static LoadConfigFromFile(): Partial<Config> | undefined {
+  private static LoadConfigFromFile(): Partial<SmartmeterConfig> | undefined {
     // https://developers.home-assistant.io/docs/hassio_addon_config
     if (process.env.CONFIG_PATH === undefined) process.env.CONFIG_PATH = '/data/options.json';
     if (fs.existsSync(process.env.CONFIG_PATH)) {
       const fileContent = fs.readFileSync(process.env.CONFIG_PATH).toString();
-      return JSON.parse(fileContent) as Partial<Config>;
+      return JSON.parse(fileContent) as Partial<SmartmeterConfig>;
     }
     return undefined;
   }

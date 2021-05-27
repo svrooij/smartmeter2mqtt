@@ -1,13 +1,11 @@
 import { TcpServer } from '@svrooij/tcp-server';
-import Output from './output';
-import P1ReaderEvents from '../p1-reader-events';
+import { Output } from './output';
 import P1Reader from '../p1-reader';
 
-export default class TcpOutput extends Output {
+export default class TcpOutput implements Output {
   private server?: TcpServer;
 
   constructor(private port: number, private raw = false, private startServer = true) {
-    super();
   }
 
   start(p1Reader: P1Reader): void {
@@ -17,11 +15,11 @@ export default class TcpOutput extends Output {
 
     this.server = new TcpServer({ port: this.port, host: '0.0.0.0', maxConnections: 3 });
     if (this.raw) {
-      p1Reader.on(P1ReaderEvents.Line, (line) => {
+      p1Reader.on('line', (line) => {
         this.server?.publish(`${line}\r\n`);
       });
     } else {
-      p1Reader.on(P1ReaderEvents.ParsedResult, (data) => {
+      p1Reader.on('dsmr', (data) => {
         this.server?.publishAsJson(data, '\r\n');
       });
     }

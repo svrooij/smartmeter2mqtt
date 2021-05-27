@@ -1,6 +1,6 @@
 import P1Reader from './p1-reader';
-import { ConfigLoader } from './config';
-import Output from './output/output';
+import { SmartmeterConfig, ConfigLoader } from './config';
+import { Output } from './output/output';
 import WebServer from './output/web-server';
 import TcpOutput from './output/tcp-output';
 import MqttOutput from './output/mqtt-output';
@@ -8,17 +8,16 @@ import HttpOutput from './output/http-output';
 import DebugOutput from './output/debug-output';
 import ModbusSolarInput from './modbus-solar-input';
 
-export class Smartmeter {
+export default class Smartmeter {
   private reader: P1Reader;
 
   private outputs: Array<Output> = [];
 
-  private config = ConfigLoader.Load();
-
-  constructor() {
+  constructor(private config: SmartmeterConfig = ConfigLoader.Load()) {
     console.clear();
     console.log('----------------------------------------');
     console.log('- Smartmeter2mqtt by Stephan van Rooij -');
+    console.log('- https://svrooij.io                   -');
     console.log('- Press CTRL+C to close                -');
     console.log('----------------------------------------');
     this.reader = new P1Reader(this.config.encryption);
