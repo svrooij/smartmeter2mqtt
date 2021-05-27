@@ -1,6 +1,7 @@
 import yargs from 'yargs';
 import fs from 'fs';
 import path from 'path';
+import { InfluxOutputOptions } from './output/influx-output';
 
 export interface HttpPostConfig {
   fields?: Array<string>;
@@ -38,6 +39,7 @@ export interface SunspecConfig {
 
 export interface OutputConfig {
   debug: boolean;
+  influx?: InfluxOutputOptions;
   jsonSocket?: number;
   mqtt?: MqttConfig;
   post?: HttpPostConfig;
@@ -50,7 +52,7 @@ export interface EncryptionConfig {
   key: string;
 }
 
-export interface Config {
+export interface SmartmeterConfig {
   serialPort?: string;
   socket?: string;
 
@@ -60,7 +62,7 @@ export interface Config {
   solar?: SunspecConfig;
 }
 
-const defaultConfig: Config = {
+const defaultConfig: SmartmeterConfig = {
   outputs: {
     debug: false,
   },
@@ -69,7 +71,7 @@ const defaultConfig: Config = {
 const defaultEncryptionAad = '3000112233445566778899AABBCCDDEEFF';
 
 export class ConfigLoader {
-  public static Load(): Config {
+  public static Load(): SmartmeterConfig {
     const config = { ...defaultConfig, ...(ConfigLoader.LoadConfigFromFile() ?? ConfigLoader.LoadConfigFromArguments()) };
 
     if (config.outputs.mqtt) {
@@ -87,7 +89,7 @@ export class ConfigLoader {
     return config;
   }
 
-  public static LoadConfigFromArguments(): Partial<Config> {
+  public static LoadConfigFromArguments(): Partial<SmartmeterConfig> {
     const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json')).toString());
     const args = yargs
       .env('SMARTMETER')
@@ -114,6 +116,10 @@ export class ConfigLoader {
       .describe('mqtt-discovery', 'Emit auto-discovery message')
       .boolean('mqtt-discovery')
       .describe('mqtt-discovery-prefix', 'Autodiscovery prefix')
+      .describe('influx-url', 'Influxdb server url')
+      .describe('influx-token', 'Influxdb server token')
+      .describe('influx-bucket', 'Influx bucket')
+      .describe('influx-org', 'Influx organization')
       .describe('tcp-server', 'Expose JSON TCP socket on this port')
       .describe('raw-tcp-server', 'Expose RAW TCP socket on this port')
       .conflicts('port', 'socket')
@@ -151,7 +157,7 @@ export class ConfigLoader {
       outputs: {
         debug: args.debug === true,
       },
-    } as Config;
+    } as SmartmeterConfig;
 
     if (args['tcp-server']) {
       config.outputs.jsonSocket = args['tcp-server'];
@@ -165,6 +171,15 @@ export class ConfigLoader {
         distinctFields: args['mqtt-distinct-fields']?.split(',') ?? defaultMqttConfig.distinctFields ?? [],
         prefix: args['mqtt-topic'] ?? 'smartmeter',
         url: args['mqtt-url'],
+      };
+    }
+
+    if (args['influx-url'] && args['influx-token'] && args['influx-org'] && args['influx-bucket']) {
+      config.outputs.influx = {
+        url: args['influx-url'] as string,
+        token: args['influx-token'] as string,
+        org: args['influx-org'] as string,
+        bucket: args['influx-bucket'] as string,
       };
     }
 
@@ -202,12 +217,12 @@ export class ConfigLoader {
     return config;
   }
 
-  private static LoadConfigFromFile(): Partial<Config> | undefined {
+  private static LoadConfigFromFile(): Partial<SmartmeterConfig> | undefined {
     // https://developers.home-assistant.io/docs/hassio_addon_config
     if (process.env.CONFIG_PATH === undefined) process.env.CONFIG_PATH = '/data/options.json';
     if (fs.existsSync(process.env.CONFIG_PATH)) {
       const fileContent = fs.readFileSync(process.env.CONFIG_PATH).toString();
-      return JSON.parse(fileContent) as Partial<Config>;
+      return JSON.parse(fileContent) as Partial<SmartmeterConfig>;
     }
     return undefined;
   }

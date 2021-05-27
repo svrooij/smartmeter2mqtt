@@ -1,6 +1,6 @@
 import * as crypto from 'crypto';
 
-interface DecryptionResult {
+export interface DecryptionResult {
   frameCounter: number;
   systemTitle: string;
   message?: string;
@@ -9,7 +9,7 @@ interface DecryptionResult {
 /**
  * P1Crypt allows for decription (and encryption) of DSMR messages.
  */
-export default class P1Crypt {
+export class P1Crypt {
   // The tagsize is from the specs (default would be 16)
   private readonly gcmTagSizeBytes = 12;
 

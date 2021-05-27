@@ -1,14 +1,47 @@
 import SerialPort from 'serialport';
 import { Socket } from 'net';
+import TypedEmitter from 'typed-emitter';
 import { EventEmitter } from 'events';
+import { SunspecResult } from '@svrooij/sunspec/lib/sunspec-result';
 import P1Parser from './p1-parser';
-import P1ReaderEvents from './p1-reader-events';
 import DsmrMessage from './dsmr-message';
 import SolarInput from './solar-input';
 import GasValue from './gas-value';
-import P1Crypt from './p1-crypt';
+import { P1Crypt } from './p1-crypt';
 
-export default class P1Reader extends EventEmitter {
+export interface Usage {
+  previousUsage: number;
+  currentUsage: number;
+  relative: number;
+  message?: string;
+}
+
+interface TypedP1ReaderEvents {
+  /**
+   * Parsed result based if crc checks out
+   */
+  dsmr: (dsmr: DsmrMessage) => void;
+
+  /** Any errors while reading the stream */
+  errorMessage: (message: string) => void;
+
+  /** Relative changes in Gas Usage */
+  gasUsage: (usage: Usage) => void;
+
+  /** Read each line as it comes in */
+  line: (line: string) => void;
+
+  /** Read the complete raw dsmr message */
+  raw: (rawDsmr: string) => void;
+
+  /** Receive solar information */
+  solar: (reading: SunspecResult) => void;
+
+  /** Relative changes in electricity usage */
+  usage: (usage: Usage) => void;
+}
+
+export default class P1Reader extends (EventEmitter as new () => TypedEmitter<TypedP1ReaderEvents>) {
   private usage: number;
 
   private gasUsage: number;
@@ -77,15 +110,15 @@ export default class P1Reader extends EventEmitter {
       this.serialParser = new SerialPort.parsers.Readline({ delimiter: '\r\n' });
       this.serialPort.pipe(this.serialParser);
       this.serialParser.on('data', (line) => {
-        this.emit(P1ReaderEvents.Line, line);
-        if (P1Parser.isStart(line)) this.emit(P1ReaderEvents.Line, '');
+        this.emit('line', line);
+        if (P1Parser.isStart(line)) this.emit('line', '');
       });
     }
     this.serialParser = new SerialPort.parsers.Readline({ delimiter: '\r\n' });
     this.serialPort.pipe(this.serialParser);
     this.serialParser.on('data', (line) => {
-      this.emit(P1ReaderEvents.Line, line);
-      if (P1Parser.isStart(line)) this.emit(P1ReaderEvents.Line, '');
+      this.emit('line', line);
+      if (P1Parser.isStart(line)) this.emit('line', '');
     });
     this.reading = true;
   }
@@ -122,7 +155,7 @@ export default class P1Reader extends EventEmitter {
     if (data !== undefined && data !== '') {
       const lines = data.trim().split('\r\n');
       lines.forEach((line) => {
-        this.emit(P1ReaderEvents.Line, line);
+        this.emit('line', line);
       });
     }
     this.dataBuffer = '';
@@ -131,7 +164,7 @@ export default class P1Reader extends EventEmitter {
   public startParsing(): void {
     if (this.parsing) return;
     this.parser = new P1Parser();
-    this.on(P1ReaderEvents.Line, (line) => { this.parseLine(line.trim()); });
+    this.on('line', (line) => { this.parseLine(line.trim()); });
     this.parsing = true;
   }
 
@@ -154,10 +187,10 @@ export default class P1Reader extends EventEmitter {
     }
     // this._lastMessage = this._parser.originalMessage()
     const originalMessage = this.parser.message;
-    this.emit(P1ReaderEvents.Raw, originalMessage);
+    this.emit('raw', originalMessage);
     const result = this.parser.data;
     if (!result.crc) {
-      this.emit(P1ReaderEvents.ErrorMessage, 'CRC failed');
+      this.emit('errorMessage', 'CRC failed');
       return;
     }
     const solar = this.solarInput ? await this.solarInput.getSolarData() : undefined;
@@ -165,18 +198,18 @@ export default class P1Reader extends EventEmitter {
       result.calculatedUsage = Math.round(((result.currentUsage || 0.0) - (result.currentDelivery || 0.0)) * 1000);
       result.solarProduction = await this.solarInput?.getCurrentProduction();
       result.houseUsage = Math.round((result.solarProduction ?? 0) + result.calculatedUsage);
-      this.emit(P1ReaderEvents.SolarResult, solar);
+      this.emit('solar', solar);
     } else {
       result.calculatedUsage = Math.round(((result.currentUsage || 0.0) - (result.currentDelivery || 0.0)) * 1000);
     }
 
     this.lastResult = result;
-    this.emit(P1ReaderEvents.ParsedResult, this.lastResult);
+    this.emit('dsmr', this.lastResult);
 
     const newUsage = (result.houseUsage ?? result.calculatedUsage);
     if (this.usage !== newUsage) {
       const relative = (newUsage - this.usage);
-      this.emit(P1ReaderEvents.UsageChanged, {
+      this.emit('usage', {
         previousUsage: this.usage,
         currentUsage: newUsage,
         relative,
@@ -210,7 +243,7 @@ export default class P1Reader extends EventEmitter {
          * Gas usage is measured in thousands (0.001) - round the numbers
          * accordingly
          */
-        this.emit(P1ReaderEvents.GasUsageChanged, {
+        this.emit('gasUsage', {
           previousUsage: parseFloat(this.gasUsage.toFixed(3)),
           currentUsage: parseFloat(newGasUsage.toFixed(3)),
           relative: parseFloat(relative.toFixed(3)),

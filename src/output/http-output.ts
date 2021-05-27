@@ -3,7 +3,6 @@ import { URLSearchParams } from 'url';
 import { HttpPostConfig } from '../config';
 import IntervalOutput from './interval-output';
 import P1Reader from '../p1-reader';
-import P1ReaderEvents from '../p1-reader-events';
 import DsmrMessage from '../dsmr-message';
 import GasValue from '../gas-value';
 
@@ -14,14 +13,14 @@ export default class HttpOutput extends IntervalOutput {
 
   start(p1Reader: P1Reader): void {
     super.start(p1Reader);
-    this.on(P1ReaderEvents.ParsedResult, (data) => this.sendEvent(data)
+    this.on('dsmr', (data) => this.sendEvent(data)
       .then((result) => {
         if (!result.ok) {
           throw new Error(result.statusText);
         }
       })
       .catch((err) => {
-        this.emit(P1ReaderEvents.ErrorMessage, err);
+        this.emit('dsmr', err);
       }));
   }
 

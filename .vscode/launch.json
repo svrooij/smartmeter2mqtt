@@ -8,21 +8,10 @@
       "type": "node",
       "request": "launch",
       "name": "Launch Program",
-      "program": "${workspaceFolder}/src/index.ts",
+      "program": "${workspaceFolder}/bin/run",
       "preLaunchTask": "tsc: build - tsconfig.json",
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-      "env": {
-        // "SMARTMETER_PORT": "/dev/ttyUSB0",
-        // "SMARTMETER_SOCKET": "192.168.94.12:3020",
-        "SMARTMETER_DEBUG": "true",
-        "SMARTMETER_web-server": "3000",
-        "SMARTMETER_tcp-server": "3010",
-        "SMARTMETER_raw-tcp-server": "3020",
-        "SMARTMETER_mqtt-url": "mqtt://localhost:1883",
-        // "SMARTMETER_enc-key": "AAAA57A9FC71698E193D7CF6103CAAAA"
-        // "SMARTMETER_sunspec-modbus": "192.168.1.30"
-
-      }
+      "envFile": "${workspaceFolder}/.env"
     },
     {
       "type": "node",

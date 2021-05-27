@@ -2,8 +2,8 @@ FROM node:current-alpine as node-original
 FROM node-original as install
 WORKDIR /usr/src/app
 COPY package*.json ./
-RUN apk update &&\
-  apk add --no-cache make gcc g++ python linux-headers udev
+RUN apk update && \
+  apk add --no-cache make gcc g++ python3 linux-headers udev
 RUN npm ci --only=production
 
 FROM install as compile
@@ -16,6 +16,7 @@ FROM node-original as combiner
 WORKDIR /usr/src/app
 COPY --from=install /usr/src/app/node_modules /usr/src/app/node_modules
 COPY --from=install /usr/src/app/package.json /usr/src/app/package.json
+COPY bin/run /usr/src/app/bin/run
 COPY --from=compile /usr/src/app/dist /usr/src/app/dist
 
 FROM node-original as production
@@ -33,4 +34,4 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.version=$BUILD_VERSION \
       org.label-schema.vcs-ref=$VCS_REF
 
-CMD ["node", "./dist/index.js"]
+CMD ["node", "./bin/run"]

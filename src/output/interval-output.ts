@@ -1,8 +1,17 @@
-import P1Reader from '../p1-reader';
-import Output from './output';
-import P1ReaderEvents from '../p1-reader-events';
+import EventEmitter from 'events';
+import TypedEmitter from 'typed-emitter';
+import P1Reader, { Usage } from '../p1-reader';
+import { Output } from './output';
+import DsmrMessage from '../dsmr-message';
 
-export default class IntervalOutput extends Output {
+
+interface IntervalOutputEvents {
+  dsmr: (result: DsmrMessage) => void;
+  gasUsage: (usage: Usage) => void;
+  usage: (usage: Usage) => void;
+}
+
+export default abstract class IntervalOutput extends (EventEmitter as unknown as new () => TypedEmitter<IntervalOutputEvents>) implements Output {
   private timer?: NodeJS.Timeout;
 
   private publishNextEvent: boolean;
@@ -19,17 +28,17 @@ export default class IntervalOutput extends Output {
     if (p1Reader === undefined) throw new Error('p1Reader is undefined!');
 
 
-    p1Reader.on(P1ReaderEvents.ParsedResult, (result) => {
+    p1Reader.on('dsmr', (result) => {
       if (this.publishNextEvent) {
-        this.emit(P1ReaderEvents.ParsedResult, result);
+        this.emit('dsmr', result);
         this.publishNextEvent = false;
       }
     });
-    p1Reader.on(P1ReaderEvents.UsageChanged, (result) => {
-      this.emit(P1ReaderEvents.UsageChanged, result);
+    p1Reader.on('usage', (result) => {
+      this.emit('usage', result);
     });
-    p1Reader.on(P1ReaderEvents.GasUsageChanged, (result) => {
-      this.emit(P1ReaderEvents.GasUsageChanged, result);
+    p1Reader.on('gasUsage', (result) => {
+      this.emit('gasUsage', result);
     });
 
     this.timer = setInterval(() => {

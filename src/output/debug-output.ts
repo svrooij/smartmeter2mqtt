@@ -1,7 +1,5 @@
 import P1Reader from '../p1-reader';
-import Output from './output';
-import P1ReaderEvents from '../p1-reader-events';
-
+import { Output } from './output';
 
 /**
  * DebugOutput is a sample output.
@@ -10,18 +8,18 @@ import P1ReaderEvents from '../p1-reader-events';
  * you can start listening to events from the reader.
  * You should also implement the 'stop()' method to stop any started server.
  */
-export default class DebugOutput extends Output {
+export default class DebugOutput implements Output {
   start(p1Reader: P1Reader): void {
-    p1Reader.on(P1ReaderEvents.ParsedResult, (result) => {
+    p1Reader.on('dsmr', (result) => {
       console.log(' - new reading %s', JSON.stringify(result, null, 2));
     });
-    p1Reader.on(P1ReaderEvents.UsageChanged, (result) => {
+    p1Reader.on('usage', (result) => {
       console.log(' - usageChange %s', result.message);
     });
-    p1Reader.on(P1ReaderEvents.GasUsageChanged, (result) => {
+    p1Reader.on('gasUsage', (result) => {
       console.log(' - gasUsageChange %s', result.message);
     });
-    p1Reader.on(P1ReaderEvents.ErrorMessage, (message) => {
+    p1Reader.on('errorMessage', (message) => {
       console.log(' - errorMessage %s', message);
     });
   }

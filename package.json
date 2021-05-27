@@ -30,6 +30,7 @@
   },
   "homepage": "https://github.com/svrooij/smartmeter2mqtt#readme",
   "dependencies": {
+    "@influxdata/influxdb-client": "^1.13.0",
     "@serialport/parser-readline": "^9.0.7",
     "@svrooij/sunspec": "^0.9.0",
     "@svrooij/tcp-server": "^1.0.1",
@@ -38,6 +39,7 @@
     "mqtt": "^4.2.6",
     "node-fetch": "^2.6.1",
     "serialport": "^9.0.7",
+    "typed-emitter": "^1.3.1",
     "ws": "^7.4.3",
     "yargs": "^16.2.0"
   },
@@ -60,9 +62,11 @@
     "typescript": "^3.8.3"
   },
   "bin": {
-    "smartmeter2mqtt": "./dist/index.js"
+    "smartmeter2mqtt": "./bin/run"
   },
   "files": [
+    "bin/run",
+    "bin/run.cmd",
     "dist/**/*.js",
     "dist/output/wwwroot"
   ]
