@@ -1,6 +1,7 @@
 import yargs from 'yargs';
 import fs from 'fs';
 import path from 'path';
+import { InfluxOutputOptions } from './output/influx-output';
 
 export interface HttpPostConfig {
   fields?: Array<string>;
@@ -38,6 +39,7 @@ export interface SunspecConfig {
 
 export interface OutputConfig {
   debug: boolean;
+  influx?: InfluxOutputOptions;
   jsonSocket?: number;
   mqtt?: MqttConfig;
   post?: HttpPostConfig;
@@ -114,6 +116,10 @@ export class ConfigLoader {
       .describe('mqtt-discovery', 'Emit auto-discovery message')
       .boolean('mqtt-discovery')
       .describe('mqtt-discovery-prefix', 'Autodiscovery prefix')
+      .describe('influx-url', 'Influxdb server url')
+      .describe('influx-token', 'Influxdb server token')
+      .describe('influx-bucket', 'Influx bucket')
+      .describe('influx-org', 'Influx organization')
       .describe('tcp-server', 'Expose JSON TCP socket on this port')
       .describe('raw-tcp-server', 'Expose RAW TCP socket on this port')
       .conflicts('port', 'socket')
@@ -166,6 +172,15 @@ export class ConfigLoader {
         prefix: args['mqtt-topic'] ?? 'smartmeter',
         url: args['mqtt-url'],
       };
+    }
+
+    if (args['influx-url'] && args['influx-token'] && args['influx-org'] && args['influx-bucket']) {
+      config.outputs.influx = {
+        url: args['influx-url'] as string,
+        token: args['influx-token'] as string,
+        org: args['influx-org'] as string,
+        bucket: args['influx-bucket'] as string,
+      }
     }
 
     if (typeof args['post-url'] === 'string') {

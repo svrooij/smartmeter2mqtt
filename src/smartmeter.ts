@@ -7,6 +7,7 @@ import MqttOutput from './output/mqtt-output';
 import HttpOutput from './output/http-output';
 import DebugOutput from './output/debug-output';
 import ModbusSolarInput from './modbus-solar-input';
+import { InfluxOutput } from './output/influx-output';
 
 export default class Smartmeter {
   private reader: P1Reader;
@@ -45,7 +46,9 @@ export default class Smartmeter {
     if (this.config.solar) {
       this.reader.addSolarInput(new ModbusSolarInput(this.config.solar.host, this.config.solar.port));
     }
-    this.startOutputs();
+
+    this.addDefaultOutputs();
+    this.configureOutputs();
   }
 
   async stop(): Promise<void> {
@@ -56,10 +59,15 @@ export default class Smartmeter {
     process.exit();
   }
 
-  private startOutputs(): void {
+  private addDefaultOutputs(): void {
     if (this.config.outputs.debug) {
       console.log('- Output: debug');
       this.outputs.push(new DebugOutput());
+    }
+
+    if(this.config.outputs.influx) {
+      console.log('- Output: InfluxDB to %s', this.config.outputs.influx.url);
+      this.outputs.push(new InfluxOutput(this.config.outputs.influx));
     }
 
     if (this.config.outputs.jsonSocket) {
@@ -86,7 +94,9 @@ export default class Smartmeter {
       console.log('- Output: Webserver on port %d', this.config.outputs.webserver);
       this.outputs.push(new WebServer(this.config.outputs.webserver, true));
     }
+  }
 
+  private configureOutputs(): void {
     if (this.outputs.length === 0) {
       console.warn('No outputs enabled, you should enable at least one.');
       process.exit(5);
@@ -96,5 +106,13 @@ export default class Smartmeter {
         output.start(this.reader);
       });
     }
+  }
+
+  /**
+   * Push additional outputs before calling start
+   * @param { Output } output An object that implements the Output interface
+   */
+  public addOutput(output: Output): void {
+    this.outputs.push(output);
   }
 }
