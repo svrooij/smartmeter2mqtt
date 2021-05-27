@@ -65,7 +65,7 @@ export default class Smartmeter {
       this.outputs.push(new DebugOutput());
     }
 
-    if(this.config.outputs.influx) {
+    if (this.config.outputs.influx) {
       console.log('- Output: InfluxDB to %s', this.config.outputs.influx.url);
       this.outputs.push(new InfluxOutput(this.config.outputs.influx));
     }

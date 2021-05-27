@@ -180,7 +180,7 @@ export class ConfigLoader {
         token: args['influx-token'] as string,
         org: args['influx-org'] as string,
         bucket: args['influx-bucket'] as string,
-      }
+      };
     }
 
     if (typeof args['post-url'] === 'string') {
