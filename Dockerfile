@@ -1,4 +1,4 @@
-FROM node:current-alpine as node-original
+FROM node:14-alpine as node-original
 FROM node-original as install
 WORKDIR /usr/src/app
 COPY package*.json ./

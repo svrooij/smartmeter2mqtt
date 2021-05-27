@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const Smartmeter = require('../dist/index.js').Smartmeter;
+const Smartmeter = require('../dist/index').Smartmeter;
 
 const smartmeter = new Smartmeter();
 smartmeter.start();
