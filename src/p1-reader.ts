@@ -114,12 +114,7 @@ export default class P1Reader extends (EventEmitter as new () => TypedEmitter<Ty
         if (P1Parser.isStart(line)) this.emit('line', '');
       });
     }
-    this.serialParser = new SerialPort.parsers.Readline({ delimiter: '\r\n' });
-    this.serialPort.pipe(this.serialParser);
-    this.serialParser.on('data', (line) => {
-      this.emit('line', line);
-      if (P1Parser.isStart(line)) this.emit('line', '');
-    });
+
     this.reading = true;
   }
 
