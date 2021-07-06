@@ -5,11 +5,31 @@ import { MqttConfig } from '../config';
 import P1Reader from '../p1-reader';
 import DsmrMessage from '../dsmr-message';
 
+interface MqttDiscoveryMessage {
+  device: {
+    identifiers: string[];
+    manufacturer?: string;
+    model?: string;
+    name?: string;
+    sw_version?: string;
+  };
+  device_class?: string;
+  json_attributes_topic: string;
+  state_topic: string;
+  name: string;
+  icon?: string;
+  unit_of_measurement?: string;
+  value_template: string;
+  unique_id: string;
+}
+
 
 export default class MqttOutput implements Output {
   private mqtt?: MqttClient;
 
   private discoverySend = false;
+
+  private discoverySolarSend = false;
 
   constructor(private config: MqttConfig) {
   }
@@ -22,7 +42,7 @@ export default class MqttOutput implements Output {
 
     p1Reader.on('dsmr', (data) => {
       this.publishData(data);
-      if (this.config.discovery && !this.discoverySend) {
+      if (this.config.discovery && !this.discoverySend && this.mqtt?.connected) {
         this.publishAutoDiscovery(data);
         this.discoverySend = true;
       }
@@ -38,6 +58,10 @@ export default class MqttOutput implements Output {
 
     p1Reader.on('solar', (data) => {
       this.publishSolar(data);
+      if (this.config.discovery && !this.discoverySolarSend && this.mqtt?.connected) {
+        this.solarAutoDiscovery(data);
+        this.discoverySolarSend = true;
+      }
     });
   }
 
@@ -101,85 +125,131 @@ export default class MqttOutput implements Output {
 
   private publishAutoDiscovery(data: DsmrMessage): void {
     // Current usage
-    const device = {
-      // json_attributes: true,
-      device_class: 'power',
-      // schema: 'json',
-      // json_attributes_topic: `${this._options.topic}/status/enegry`,
+    const description: MqttDiscoveryMessage = {
+      // availability: [
+      //   { topic: `${this.config.prefix}/connected` }
+      // ],
+      device: {
+        identifiers: [
+          `smartmeter_${data.powerSn}`,
+        ],
+        name: 'Smartmeter',
+        sw_version: 'smartmeter2mqtt',
+      },
+      json_attributes_topic: `${this.config.prefix}/status/energy`,
       state_topic: `${this.config.prefix}/status/energy`,
-      availability_topic: `${this.config.prefix}/connected`,
-      payload_available: '2',
       name: 'Current power usage',
-      icon: 'mdi:speedometer',
+      icon: 'mdi:transmission-tower',
       unit_of_measurement: 'Watt',
-      value_template: '{{value_json.calculatedUsage}}',
+      value_template: '{{ value_json.calculatedUsage }}',
       unique_id: `smartmeter_${data.powerSn}_current-usage`,
     };
-    this.mqtt?.publish(`${this.config.discoveryPrefix}/sensor/smartmeter/power-usage/config`, JSON.stringify(device), { qos: 0, retain: true });
 
-    delete device.icon;
+    this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/power-usage/config`, description);
 
     if (data.totalImportedEnergyP) {
-      device.unique_id = `smartmeter_${data.powerSn}_total_imported`;
-      device.unit_of_measurement = 'kWh';
-      device.value_template = '{{value_json.totalImportedEnergyP}}';
-      device.name = 'Total power imported';
-      this.mqtt?.publish(`${this.config.discoveryPrefix}/sensor/smartmeter/power-imported/config`, JSON.stringify(device), { qos: 0, retain: true });
+      description.unique_id = `smartmeter_${data.powerSn}_total_imported`;
+      description.unit_of_measurement = 'kWh';
+      description.value_template = '{{ value_json.totalImportedEnergyP }}';
+      description.name = 'Total power imported';
+      this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/power-imported/config`, description);
     }
 
     if (data.totalExportedEnergyQ) {
-      device.unique_id = `smartmeter_${data.powerSn}_total_exported`;
-      device.unit_of_measurement = 'kvarh';
-      device.value_template = '{{value_json.totalExportedEnergyQ}}';
-      device.name = 'Total power exported';
-      this.mqtt?.publish(`${this.config.discoveryPrefix}/sensor/smartmeter/power-exported/config`, JSON.stringify(device), { qos: 0, retain: true });
+      description.unique_id = `smartmeter_${data.powerSn}_total_exported`;
+      description.unit_of_measurement = 'kvarh';
+      description.value_template = '{{ value_json.totalExportedEnergyQ }}';
+      description.name = 'Total power exported';
+      this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/power-exported/config`, description);
     }
 
     if (data.totalT1Use) {
       // Total T1
-      device.unique_id = `smartmeter_${data.powerSn}_total_t1_used`;
-      device.unit_of_measurement = 'kWh';
-      device.value_template = '{{value_json.totalT1Use}}';
-      device.name = 'Total power used T1';
-      this.mqtt?.publish(`${this.config.discoveryPrefix}/sensor/smartmeter/t1-used/config`, JSON.stringify(device), { qos: 0, retain: true });
+      description.unique_id = `smartmeter_${data.powerSn}_total_t1_used`;
+      description.unit_of_measurement = 'kWh';
+      description.value_template = '{{ value_json.totalT1Use }}';
+      description.name = 'Total power used T1';
+      this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/t1-used/config`, description);
     }
 
     if (data.totalT2Use) {
       // Total T2
-      device.unique_id = `smartmeter_${data.powerSn}_total_t2_used`;
-      device.unit_of_measurement = 'kWh';
-      device.value_template = '{{value_json.totalT2Use}}';
-      device.name = 'Total power used T2';
-      this.mqtt?.publish(`${this.config.discoveryPrefix}/sensor/smartmeter/t2-used/config`, JSON.stringify(device), { qos: 0, retain: true });
+      description.unique_id = `smartmeter_${data.powerSn}_total_t2_used`;
+      description.unit_of_measurement = 'kWh';
+      description.value_template = '{{ value_json.totalT2Use }}';
+      description.name = 'Total power used T2';
+      this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/t2-used/config`, description);
     }
 
     if (data.totalT1Delivered) {
       // Total T1 delivered
-      device.unique_id = `smartmeter_${data.powerSn}_total_t1_delivered`;
-      device.unit_of_measurement = 'kWh';
-      device.value_template = '{{value_json.totalT1Delivered}}';
-      device.name = 'Total power delivered T1';
-      this.mqtt?.publish(`${this.config.discoveryPrefix}/sensor/smartmeter/t1-delivered/config`, JSON.stringify(device), { qos: 0, retain: true });
+      description.unique_id = `smartmeter_${data.powerSn}_total_t1_delivered`;
+      description.unit_of_measurement = 'kWh';
+      description.value_template = '{{ value_json.totalT1Delivered }}';
+      description.name = 'Total power delivered T1';
+      this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/t1-delivered/config`, description);
     }
 
     if (data.totalT2Delivered) {
       // Total T2 delivered
-      device.unique_id = `smartmeter_${data.powerSn}_total_t2_delivered`;
-      device.unit_of_measurement = 'kWh';
-      device.value_template = '{{value_json.totalT2Delivered}}';
-      device.name = 'Total power delivered T2';
-      this.mqtt?.publish(`${this.config.discoveryPrefix}/sensor/smartmeter/t2-delivered/config`, JSON.stringify(device), { qos: 0, retain: true });
+      description.unique_id = `smartmeter_${data.powerSn}_total_t2_delivered`;
+      description.unit_of_measurement = 'kWh';
+      description.value_template = '{{ value_json.totalT2Delivered }}';
+      description.name = 'Total power delivered T2';
+      this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/t2-delivered/config`, description);
+    }
+
+    if (data.currentTarrif) {
+      description.unique_id = `smartmeter_${data.powerSn}_current_tarrif`;
+      delete description.unit_of_measurement;
+      description.value_template = '{{ value_json.currentTarrif }}';
+      description.name = 'Current tarrif';
+      this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/current-tarrif/config`, description);
     }
 
     // Total Gas used
     if (data.gasSn) {
-      device.unique_id = `smartmeter_${data.gasSn}_total_gas`;
-      device.unit_of_measurement = 'm³';
-      device.value_template = '{{value_json.gas.totalUse}}';
-      device.name = 'Total gas usage';
-      device.icon = 'mdi:gas-cylinder';
-      delete device.device_class;
-      this.mqtt?.publish(`${this.config.discoveryPrefix}/sensor/smartmeter/gas/config`, JSON.stringify(device), { qos: 0, retain: true });
+      description.device.identifiers = [
+        `smartmeter_${data.gasSn}`,
+      ];
+      description.unique_id = `smartmeter_${data.gasSn}_total_gas`;
+      description.unit_of_measurement = 'm³';
+      description.value_template = '{{ value_json.gas.totalUse }}';
+      description.name = 'Total gas usage';
+      description.icon = 'mdi:gas-cylinder';
+      // delete description.device_class;
+      this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/gas/config`, description);
     }
+  }
+
+  private solarAutoDiscovery(solar: SunspecResult): void {
+    const description: MqttDiscoveryMessage = {
+      device: {
+        identifiers: [`solar-invertor_${solar.serial}`],
+        manufacturer: solar.manufacturer,
+        model: solar.model,
+        name: `${solar.manufacturer} ${solar.model} ${solar.serial}`,
+        sw_version: 'smartmeter2mqtt',
+      },
+      unique_id: `solar-invertor_${solar.serial}_total`,
+      unit_of_measurement: 'Wh',
+      json_attributes_topic: `${this.config.prefix}/status/solar`,
+      state_topic: `${this.config.prefix}/status/solar`,
+      name: 'Lifetime solar production',
+      icon: 'mdi:solar-power',
+      value_template: '{{ value_json.lifetimeProduction }}',
+    };
+    this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/solar-total/config`, description);
+
+    description.name = 'Current solar production';
+    description.unique_id = `solar-invertor_${solar.serial}_current`;
+    description.unit_of_measurement = 'Watt';
+    description.value_template = '{{ value_json.acPower }}';
+    this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/solar-current/config`, description);
+  }
+
+  private publishDiscoveryMessage(topic: string, message: MqttDiscoveryMessage): void {
+    console.debug('MQTT auto discovery %s %s', topic, JSON.stringify(message));
+    this.mqtt?.publish(topic, JSON.stringify(message), { qos: 0, retain: true });
   }
 }
