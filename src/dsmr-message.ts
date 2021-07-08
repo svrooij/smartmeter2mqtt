@@ -52,7 +52,7 @@ interface DsmrMessageBase {
   gasSn?: string;
   /**
    * Meter header (model number)
-   * 
+   *
    * @type {string}
    * @memberof DsmrMessageBase
    */

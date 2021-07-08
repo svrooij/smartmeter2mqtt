@@ -89,7 +89,7 @@ export class ConfigLoader {
     return config;
   }
 
-  public static LoadPackageData(): { name: string, version: string, description?:string } {
+  public static LoadPackageData(): { name: string; version: string; description?: string } {
     return JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json')).toString());
   }
 
