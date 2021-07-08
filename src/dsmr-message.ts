@@ -51,6 +51,13 @@ interface DsmrMessageBase {
    */
   gasSn?: string;
   /**
+   * Meter header (model number)
+   * 
+   * @type {string}
+   * @memberof DsmrMessageBase
+   */
+  header?: string;
+  /**
    * Power meter serial number
    *
    * @type {string}

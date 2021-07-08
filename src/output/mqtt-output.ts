@@ -1,11 +1,12 @@
 import mqtt, { MqttClient, IClientOptions } from 'mqtt';
 import { SunspecResult } from '@svrooij/sunspec/lib/sunspec-result';
 import { Output } from './output';
-import { MqttConfig } from '../config';
+import { MqttConfig, ConfigLoader } from '../config';
 import P1Reader from '../p1-reader';
 import DsmrMessage from '../dsmr-message';
 
 interface MqttDiscoveryMessage {
+  availability?: [{ topic: string, payload_available?: string, payload_not_available?: string }],
   device: {
     identifiers: string[];
     manufacturer?: string;
@@ -13,7 +14,8 @@ interface MqttDiscoveryMessage {
     name?: string;
     sw_version?: string;
   };
-  device_class?: string;
+  device_class?: 'power' | 'current' | 'energy' | 'voltage';
+  state_class?: 'measurement';
   json_attributes_topic: string;
   state_topic: string;
   name: string;
@@ -30,6 +32,8 @@ export default class MqttOutput implements Output {
   private discoverySend = false;
 
   private discoverySolarSend = false;
+
+  private readonly pkg = ConfigLoader.LoadPackageData();
 
   constructor(private config: MqttConfig) {
   }
@@ -126,16 +130,19 @@ export default class MqttOutput implements Output {
   private publishAutoDiscovery(data: DsmrMessage): void {
     // Current usage
     const description: MqttDiscoveryMessage = {
-      // availability: [
-      //   { topic: `${this.config.prefix}/connected` }
-      // ],
+      availability: [
+        { topic: `${this.config.prefix}/connected`, payload_available: '2' }
+      ],
       device: {
         identifiers: [
           `smartmeter_${data.powerSn}`,
         ],
-        name: 'Smartmeter',
-        sw_version: 'smartmeter2mqtt',
+        model: data.header,
+        name: `DSMR power ${data.powerSn?.substr(-5,5)}`,
+        sw_version: `${this.pkg.name} (${this.pkg.version})`,
       },
+      device_class: 'power',
+      state_class: 'measurement',
       json_attributes_topic: `${this.config.prefix}/status/energy`,
       state_topic: `${this.config.prefix}/status/energy`,
       name: 'Current power usage',
@@ -152,6 +159,7 @@ export default class MqttOutput implements Output {
       description.unit_of_measurement = 'kWh';
       description.value_template = '{{ value_json.totalImportedEnergyP }}';
       description.name = 'Total power imported';
+      description.device_class = 'energy';
       this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/power-imported/config`, description);
     }
 
@@ -160,6 +168,7 @@ export default class MqttOutput implements Output {
       description.unit_of_measurement = 'kvarh';
       description.value_template = '{{ value_json.totalExportedEnergyQ }}';
       description.name = 'Total power exported';
+      description.device_class = 'energy';
       this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/power-exported/config`, description);
     }
 
@@ -169,6 +178,7 @@ export default class MqttOutput implements Output {
       description.unit_of_measurement = 'kWh';
       description.value_template = '{{ value_json.totalT1Use }}';
       description.name = 'Total power used T1';
+      description.device_class = 'energy';
       this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/t1-used/config`, description);
     }
 
@@ -178,6 +188,7 @@ export default class MqttOutput implements Output {
       description.unit_of_measurement = 'kWh';
       description.value_template = '{{ value_json.totalT2Use }}';
       description.name = 'Total power used T2';
+      description.device_class = 'energy';
       this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/t2-used/config`, description);
     }
 
@@ -187,6 +198,7 @@ export default class MqttOutput implements Output {
       description.unit_of_measurement = 'kWh';
       description.value_template = '{{ value_json.totalT1Delivered }}';
       description.name = 'Total power delivered T1';
+      description.device_class = 'energy';
       this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/t1-delivered/config`, description);
     }
 
@@ -196,6 +208,7 @@ export default class MqttOutput implements Output {
       description.unit_of_measurement = 'kWh';
       description.value_template = '{{ value_json.totalT2Delivered }}';
       description.name = 'Total power delivered T2';
+      description.device_class = 'energy';
       this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/t2-delivered/config`, description);
     }
 
@@ -204,7 +217,19 @@ export default class MqttOutput implements Output {
       delete description.unit_of_measurement;
       description.value_template = '{{ value_json.currentTarrif }}';
       description.name = 'Current tarrif';
+      delete description.device_class;
       this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/current-tarrif/config`, description);
+    }
+
+    if (data.houseUsage) {
+      description.json_attributes_topic= `${this.config.prefix}/status/usage`;
+      description.state_topic= `${this.config.prefix}/status/usage`,
+      description.unique_id = `smartmeter_${data.powerSn}_house-usage`;
+      description.unit_of_measurement = 'Watt';
+      description.value_template = '{{ value_json.val }}';
+      description.name = 'Current house usage';
+      description.device_class = 'power';
+      this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/house-usage/config`, description);
     }
 
     // Total Gas used
@@ -212,24 +237,30 @@ export default class MqttOutput implements Output {
       description.device.identifiers = [
         `smartmeter_${data.gasSn}`,
       ];
+      description.json_attributes_topic= `${this.config.prefix}/status/energy`;
+      description.state_topic= `${this.config.prefix}/status/energy`,
+      description.device.name = `DSMR gas ${data.gasSn?.substr(-5,5)}`
       description.unique_id = `smartmeter_${data.gasSn}_total_gas`;
       description.unit_of_measurement = 'm³';
       description.value_template = '{{ value_json.gas.totalUse }}';
       description.name = 'Total gas usage';
       description.icon = 'mdi:gas-cylinder';
-      // delete description.device_class;
+      delete description.device_class;
       this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/gas/config`, description);
     }
   }
 
   private solarAutoDiscovery(solar: SunspecResult): void {
     const description: MqttDiscoveryMessage = {
+      availability: [
+        { topic: `${this.config.prefix}/connected`, payload_available: '2' }
+      ],
       device: {
         identifiers: [`solar-invertor_${solar.serial}`],
         manufacturer: solar.manufacturer,
         model: solar.model,
         name: `${solar.manufacturer} ${solar.model} ${solar.serial}`,
-        sw_version: 'smartmeter2mqtt',
+        sw_version: `${this.pkg.name} (${this.pkg.version})`,
       },
       unique_id: `solar-invertor_${solar.serial}_total`,
       unit_of_measurement: 'Wh',
@@ -237,6 +268,8 @@ export default class MqttOutput implements Output {
       state_topic: `${this.config.prefix}/status/solar`,
       name: 'Lifetime solar production',
       icon: 'mdi:solar-power',
+      device_class: 'energy',
+      state_class: 'measurement',
       value_template: '{{ value_json.lifetimeProduction }}',
     };
     this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/solar-total/config`, description);
@@ -245,6 +278,7 @@ export default class MqttOutput implements Output {
     description.unique_id = `solar-invertor_${solar.serial}_current`;
     description.unit_of_measurement = 'Watt';
     description.value_template = '{{ value_json.acPower }}';
+    description.device_class = 'power',
     this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/solar-current/config`, description);
   }
 

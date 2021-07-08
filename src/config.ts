@@ -89,8 +89,12 @@ export class ConfigLoader {
     return config;
   }
 
+  public static LoadPackageData(): { name: string, version: string, description?:string } {
+    return JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json')).toString());
+  }
+
   public static LoadConfigFromArguments(): Partial<SmartmeterConfig> {
-    const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json')).toString());
+    const pkg = ConfigLoader.LoadPackageData();
     const args = yargs
       .env('SMARTMETER')
       .usage(`${pkg.name} ${pkg.version}\n${pkg.description
