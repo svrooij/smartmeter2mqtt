@@ -1,4 +1,5 @@
 import P1Reader from '../p1-reader';
+import BaseSolarReader from '../solar/base-solar-input';
 import { Output } from './output';
 
 /**
@@ -21,6 +22,12 @@ export default class DebugOutput implements Output {
     });
     p1Reader.on('errorMessage', (message) => {
       console.log(' - errorMessage %s', message);
+    });
+  }
+
+  addSolar(solarReader: BaseSolarReader): void {
+    solarReader.on('solar', (data) => {
+      console.log(' - solar %s', JSON.stringify(data));
     });
   }
 

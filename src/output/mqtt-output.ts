@@ -4,6 +4,7 @@ import { Output } from './output';
 import { MqttConfig, ConfigLoader } from '../config';
 import P1Reader from '../p1-reader';
 import DsmrMessage from '../dsmr-message';
+import BaseSolarReader from '../solar/base-solar-input';
 
 interface MqttDiscoveryMessage {
   availability?: [{ topic: string; payload_available?: string; payload_not_available?: string }];
@@ -59,8 +60,10 @@ export default class MqttOutput implements Output {
     p1Reader.on('gasUsage', (data) => {
       this.publishGasUsage(data);
     });
+  }
 
-    p1Reader.on('solar', (data) => {
+  addSolar(solarReader: BaseSolarReader): void {
+    solarReader.on('solar', (data) => {
       this.publishSolar(data);
       if (this.config.discovery && !this.discoverySolarSend && this.mqtt?.connected) {
         this.solarAutoDiscovery(data);
@@ -119,7 +122,7 @@ export default class MqttOutput implements Output {
     }
   }
 
-  private publishSolar(data: SunspecResult): void {
+  private publishSolar(data: Partial<SunspecResult>): void {
     this.sendToMqtt('solar', data);
   }
 
@@ -250,7 +253,7 @@ export default class MqttOutput implements Output {
     }
   }
 
-  private solarAutoDiscovery(solar: SunspecResult): void {
+  private solarAutoDiscovery(solar: Partial<SunspecResult>): void {
     const description: MqttDiscoveryMessage = {
       availability: [
         { topic: `${this.config.prefix}/connected`, payload_available: '2' },

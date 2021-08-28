@@ -1,8 +1,9 @@
-import EventEmitter from 'events';
+import { EventEmitter } from 'events';
 import TypedEmitter from 'typed-emitter';
 import P1Reader, { Usage } from '../p1-reader';
 import { Output } from './output';
 import DsmrMessage from '../dsmr-message';
+import BaseSolarReader from '../solar/base-solar-input';
 
 
 interface IntervalOutputEvents {
@@ -11,7 +12,7 @@ interface IntervalOutputEvents {
   usage: (usage: Usage) => void;
 }
 
-export default abstract class IntervalOutput extends (EventEmitter as unknown as new () => TypedEmitter<IntervalOutputEvents>) implements Output {
+export default abstract class IntervalOutput extends (EventEmitter as new () => TypedEmitter<IntervalOutputEvents>) implements Output {
   private timer?: NodeJS.Timeout;
 
   private publishNextEvent: boolean;
@@ -45,6 +46,8 @@ export default abstract class IntervalOutput extends (EventEmitter as unknown as
       this.publishNextEvent = true;
     }, (this.interval ?? 60) * 1000);
   }
+
+  addSolar(solarReader: BaseSolarReader): void {}
 
   close(): Promise<void> {
     if (this.timer) {

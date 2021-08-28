@@ -1,6 +1,7 @@
 import { TcpServer } from '@svrooij/tcp-server';
 import { Output } from './output';
 import P1Reader from '../p1-reader';
+import BaseSolarReader from '../solar/base-solar-input';
 
 export default class TcpOutput implements Output {
   private server?: TcpServer;
@@ -34,6 +35,8 @@ export default class TcpOutput implements Output {
       });
     }
   }
+
+  addSolar(solarReader: BaseSolarReader): void { }
 
   close(): Promise<void> {
     this.server?.stop();

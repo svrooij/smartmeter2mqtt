@@ -3,8 +3,9 @@ import WebSocket from 'ws';
 import path from 'path';
 import { SunspecResult } from '@svrooij/sunspec/lib/sunspec-result';
 import { Output } from './output';
-import P1Reader from '../p1-reader';
+import P1Reader, { Usage } from '../p1-reader';
 import DsmrMessage from '../dsmr-message';
+import BaseSolarReader from '../solar/base-solar-input';
 
 import express = require('express');
 
@@ -16,7 +17,7 @@ export default class WebServer implements Output {
 
   private lastReading?: DsmrMessage;
 
-  private lastSolarReading?: SunspecResult;
+  private lastSolarReading?: Partial<SunspecResult>;
 
   private checkTimeout?: NodeJS.Timeout;
 
@@ -31,13 +32,19 @@ export default class WebServer implements Output {
       this.setReading(data);
     });
 
-    p1Reader.on('solar', (data) => {
-      this.lastSolarReading = data;
-    });
+    // p1Reader.on('solar', (data) => {
+    //   this.lastSolarReading = data;
+    // });
 
     if (this.startServer === true) {
       this.startWebserver();
     }
+  }
+
+  addSolar(solarReader: BaseSolarReader): void {
+    solarReader.on('solar', (data) => {
+      this.setSolar(data);
+    });
   }
 
   private startWebserver(startSockets = true): void {
@@ -92,7 +99,12 @@ export default class WebServer implements Output {
 
   private setReading(newReading: DsmrMessage): void {
     this.lastReading = newReading;
-    this.broadcastMessage(newReading);
+    this.broadcastMessage('dsmr', newReading);
+  }
+
+  private setSolar(data: Partial<SunspecResult>): void {
+    this.lastSolarReading = data;
+    this.broadcastMessage('solar', data);
   }
 
   private checkSockets(): void {
@@ -103,8 +115,12 @@ export default class WebServer implements Output {
     // })
   }
 
-  private broadcastMessage(msg: DsmrMessage): void {
+  private broadcastMessage(topic: 'dsmr' | 'usage' | 'solar', data: DsmrMessage | Partial<SunspecResult> | Usage): void {
     if (this.wsServer) {
+      const msg = {
+        topic,
+        data,
+      };
       const readingString = JSON.stringify(msg);
       this.wsServer.clients.forEach((client) => {
         client.send(readingString);

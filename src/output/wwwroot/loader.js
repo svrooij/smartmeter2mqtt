@@ -20,8 +20,14 @@ function createSocket() {
   socket.onmessage = (msg) => {
     const data = JSON.parse(msg.data);
     // console.log('Got data from server %s', JSON.stringify(data, null, 2))
-    if (!data.err) updateData(data);
-    else console.log('Got error message %s', data.err);
+    if (data.err) {
+      console.error(err);
+      return;
+    }
+    if (data.topic === 'dsmr') updateData(data.data);
+    else {
+      console.log(data);
+    }
   };
   socket.onopen = (ev) => {
     reconnectCount = 1;

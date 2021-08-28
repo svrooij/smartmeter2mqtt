@@ -2,10 +2,10 @@ import SerialPort from 'serialport';
 import { Socket } from 'net';
 import TypedEmitter from 'typed-emitter';
 import { EventEmitter } from 'events';
-import { SunspecResult } from '@svrooij/sunspec/lib/sunspec-result';
+// import { SunspecResult } from '@svrooij/sunspec/lib/sunspec-result';
 import P1Parser from './p1-parser';
 import DsmrMessage from './dsmr-message';
-import SolarInput from './solar-input';
+// import SolarInput from './solar-input';
 import GasValue from './gas-value';
 import { P1Crypt } from './p1-crypt';
 
@@ -34,8 +34,8 @@ interface TypedP1ReaderEvents {
   /** Read the complete raw dsmr message */
   raw: (rawDsmr: string) => void;
 
-  /** Receive solar information */
-  solar: (reading: SunspecResult) => void;
+  // /** Receive solar information */
+  // solar: (reading: SunspecResult) => void;
 
   /** Relative changes in electricity usage */
   usage: (usage: Usage) => void;
@@ -76,7 +76,7 @@ export default class P1Reader extends (EventEmitter as new () => TypedEmitter<Ty
   private crypt?: P1Crypt;
 
   // Inverter stuff
-  private solarInput?: SolarInput;
+  // private solarInput?: SolarInput;
 
   constructor(options?: { key: string; aad: string}) {
     super();
@@ -163,9 +163,9 @@ export default class P1Reader extends (EventEmitter as new () => TypedEmitter<Ty
     this.parsing = true;
   }
 
-  public addSolarInput(input: SolarInput): void {
-    this.solarInput = input;
-  }
+  // public addSolarInput(input: SolarInput): void {
+  //   this.solarInput = input;
+  // }
 
   private parseLine(line: string): void {
     if (P1Parser.isStart(line)) {
@@ -188,15 +188,18 @@ export default class P1Reader extends (EventEmitter as new () => TypedEmitter<Ty
       this.emit('errorMessage', 'CRC failed');
       return;
     }
-    const solar = this.solarInput ? await this.solarInput.getSolarData() : undefined;
-    if (solar) {
-      result.calculatedUsage = Math.round(((result.currentUsage || 0.0) - (result.currentDelivery || 0.0)) * 1000);
-      result.solarProduction = await this.solarInput?.getCurrentProduction();
-      result.houseUsage = Math.round((result.solarProduction ?? 0) + result.calculatedUsage);
-      this.emit('solar', solar);
-    } else {
-      result.calculatedUsage = Math.round(((result.currentUsage || 0.0) - (result.currentDelivery || 0.0)) * 1000);
-    }
+
+    // const solar = this.solarInput ? await this.solarInput.getSolarData() : undefined;
+    // if (solar) {
+    //   result.calculatedUsage = Math.round(((result.currentUsage || 0.0) - (result.currentDelivery || 0.0)) * 1000);
+    //   result.solarProduction = await this.solarInput?.getCurrentProduction();
+    //   result.houseUsage = Math.round((result.solarProduction ?? 0) + result.calculatedUsage);
+    //   this.emit('solar', solar);
+    // } else {
+    //   result.calculatedUsage = Math.round(((result.currentUsage || 0.0) - (result.currentDelivery || 0.0)) * 1000);
+    // }
+
+    result.calculatedUsage = Math.round(((result.currentUsage || 0.0) - (result.currentDelivery || 0.0)) * 1000);
 
     this.lastResult = result;
     this.emit('dsmr', this.lastResult);
@@ -253,9 +256,9 @@ export default class P1Reader extends (EventEmitter as new () => TypedEmitter<Ty
   }
 
   public close(): Promise<void> {
-    if (this.solarInput) {
-      this.solarInput = undefined;
-    }
+    // if (this.solarInput) {
+    //   this.solarInput = undefined;
+    // }
     return new Promise<void>((resolve, reject) => {
       this.reading = false;
       if (this.serialPort) {

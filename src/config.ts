@@ -35,6 +35,7 @@ const defaultMqttConfig: Partial<MqttConfig> = {
 export interface SunspecConfig {
   host: string;
   port: number;
+  interval?: number;
 }
 
 export interface OutputConfig {
@@ -131,7 +132,9 @@ export class ConfigLoader {
       .boolean('debug')
       .describe('sunspec-modbus', 'IP of solar inverter with modbus TCP enabled')
       .describe('sunspec-modbus-port', 'modbus TCP port')
+      .describe('sunspec-modbus-interval', 'Interval for solar reading')
       .number('sunspec-modbus-port')
+      .number('sunspec-modbus-interval')
       .number('web-server')
       .number('tcp-server')
       .number('raw-tcp-server')
@@ -208,6 +211,7 @@ export class ConfigLoader {
       config.solar = {
         host: args['sunspec-modbus'],
         port: args['sunspec-modbus-port'],
+        interval: args['sunspec-modbus-interval'],
       } as SunspecConfig;
     }
 
