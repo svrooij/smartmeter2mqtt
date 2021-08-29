@@ -6,12 +6,14 @@
   "scripts": {
     "compile": "tsc",
     "copy-www": "cp -r ./src/output/wwwroot ./dist/output/wwwroot",
+    "copy-www-win": "xcopy .\\src\\output\\wwwroot .\\dist\\output\\wwwroot /E/H/C/I/d/Y",
     "coverage": "jest --coverage",
     "jest": "jest",
     "lint": "eslint ./src --ext .js,.jsx,.ts,.tsx",
     "lint-fix": "eslint ./src --ext .js,.jsx,.ts,.tsx --fix",
     "test": "npm run lint && jest",
-    "prepack": "npm run compile && npm run copy-www"
+    "prepack": "npm run compile && npm run copy-www",
+    "prepack-win": "npm run compile && npm run copy-www-win"
   },
   "repository": {
     "type": "git",

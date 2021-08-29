@@ -132,7 +132,7 @@ export class ConfigLoader {
       .boolean('debug')
       .describe('sunspec-modbus', 'IP of solar inverter with modbus TCP enabled')
       .describe('sunspec-modbus-port', 'modbus TCP port')
-      .describe('sunspec-modbus-interval', 'Interval for solar reading')
+      .describe('sunspec-interval', 'Interval for solar reading')
       .number('sunspec-modbus-port')
       .number('sunspec-modbus-interval')
       .number('web-server')
@@ -211,7 +211,7 @@ export class ConfigLoader {
       config.solar = {
         host: args['sunspec-modbus'],
         port: args['sunspec-modbus-port'],
-        interval: args['sunspec-modbus-interval'],
+        interval: args['sunspec-interval'],
       } as SunspecConfig;
     }
 
