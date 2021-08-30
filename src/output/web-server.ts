@@ -59,7 +59,7 @@ export default class WebServer implements Output {
         //   ws.isAlive = true
         // })
         if (this.lastReading) {
-          ws.send(JSON.stringify(this.lastReading));
+          ws.send(JSON.stringify({ topic: 'power', payload: this.lastReading }));
         } else {
           ws.send('{"err":"No reading just yet"}');
         }
@@ -119,7 +119,7 @@ export default class WebServer implements Output {
     if (this.wsServer) {
       const msg = {
         topic,
-        data,
+        payload: data,
       };
       const readingString = JSON.stringify(msg);
       this.wsServer.clients.forEach((client) => {

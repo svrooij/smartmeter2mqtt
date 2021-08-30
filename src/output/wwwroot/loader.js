@@ -22,16 +22,16 @@ function createSocket() {
   const wsUrl = `${protocol}://${window.location.hostname}:${window.location.port}/`;
   socket = new WebSocket(wsUrl);
   socket.onmessage = (msg) => {
-    const data = JSON.parse(msg.data);
+    const parsedMsg = JSON.parse(msg.data);
     // console.log('Got data from server %s', JSON.stringify(data, null, 2))
-    if (data.err) {
+    if (parsedMsg.err) {
       console.error(err);
       return;
     }
-    if (data.topic === 'dsmr') updateData(data.data);
-    else if (data.topic === 'solar') updateSolar(data.data);
+    if (parsedMsg.topic === 'dsmr') updateData(parsedMsg.payload);
+    else if (parsedMsg.topic === 'solar') updateSolar(parsedMsg.payload);
     else {
-      console.log(data);
+      console.log(parsedMsg);
     }
   };
   socket.onopen = (ev) => {
@@ -125,14 +125,14 @@ function updateSolar(data) {
   $('.sunProduction').text(Math.round(data.acPower || 0));
   $('.sunTotal')
     .text(Math.round((data.lifetimeProduction  || 0) / 10) * 10 / 1000)
-    .attr('title', (data.lifetimeProduction / 1000));
-  updateHouseUsage();
+    .attr('title', (data.lifetimeProduction / 1000).toFixed(2));
+  //updateHouseUsage();
 }
 
 function updateHouseUsage() {
   if (solarData && powerData) {
     $('.solar').removeClass('hide');
-    let houseUsage = solarData.acPower + (powerData.currentUsage * 1000) - (powerData.currentDelivery * 1000);
+    let houseUsage = (solarData.acPower + (powerData.currentUsage * 1000) - (powerData.currentDelivery * 1000)).toFixed(0);
     $('.houseUsage').text(houseUsage);
   }
 }

@@ -6,7 +6,7 @@ import BaseSolarReader from '../solar/base-solar-input';
 export default class TcpOutput implements Output {
   private server?: TcpServer;
 
-  constructor(private port: number, private raw = false, private startServer = true) {
+  constructor(private port: number, private socketType: 'tcp' | 'mqtt' | 'raw', private startServer = true) {
   }
 
   start(p1Reader: P1Reader): void {
@@ -15,13 +15,14 @@ export default class TcpOutput implements Output {
     }
 
     this.server = new TcpServer({ port: this.port, host: '0.0.0.0', maxConnections: 3 });
-    if (this.raw) {
+    if (this.socketType === 'raw') {
       p1Reader.on('line', (line) => {
         this.server?.publish(`${line}\r\n`);
       });
     } else {
       p1Reader.on('dsmr', (data) => {
-        this.server?.publishAsJson(data, '\r\n');
+        const niceData = this.socketType === 'mqtt' ? { topic: 'power', payload: data } : data;
+        this.server?.publishAsJson(niceData, '\r\n');
       });
     }
 
@@ -36,7 +37,13 @@ export default class TcpOutput implements Output {
     }
   }
 
-  addSolar(solarReader: BaseSolarReader): void { }
+  addSolar(solarReader: BaseSolarReader): void {
+    if (this.socketType === 'mqtt') {
+      solarReader.on('solar', (data) => {
+        this.server?.publishAsJson({ topic: 'solar', payload: data }, '\r\n');
+      });
+    }
+  }
 
   close(): Promise<void> {
     this.server?.stop();

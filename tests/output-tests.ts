@@ -21,7 +21,7 @@ describe('DebugOutput', () => {
 describe('TcpOutput', () => {
   it('Should subscribe to Parsed result event', () => {
     const fakeReader = new P1Reader()
-    const tcpServer = new TcpOutput(3000, false, false)
+    const tcpServer = new TcpOutput(3000, 'tcp', false)
     tcpServer.start(fakeReader)
     expect(fakeReader.listenerCount('dsmr')).to.be.eq(1, 'Json TCP output not subscribed to ParsedResult event')
     tcpServer.close()
@@ -29,7 +29,7 @@ describe('TcpOutput', () => {
 
   it('Should subscribe to Line event for rawSocket: true', () => {
     const fakeReader = new P1Reader()
-    const tcpServer = new TcpOutput(3000, true, false)
+    const tcpServer = new TcpOutput(3000, 'raw', false)
     tcpServer.start(fakeReader)
     expect(fakeReader.listenerCount('line')).to.be.eq(1, 'Raw TCP output not subscribed to Line event')
     tcpServer.close()

@@ -22,6 +22,8 @@ export interface MqttConfig {
   distinctFields: Array<string>;
   prefix: string;
   url: string;
+  last_reset?: string;
+  last_reset_solar?: string;
 }
 
 const defaultMqttConfig: Partial<MqttConfig> = {
@@ -43,6 +45,7 @@ export interface OutputConfig {
   influx?: InfluxOutputOptions;
   jsonSocket?: number;
   mqtt?: MqttConfig;
+  mqttSocket?: number;
   post?: HttpPostConfig;
   rawSocket?: number;
   webserver?: number;
@@ -121,11 +124,16 @@ export class ConfigLoader {
       .describe('mqtt-discovery', 'Emit auto-discovery message')
       .boolean('mqtt-discovery')
       .describe('mqtt-discovery-prefix', 'Autodiscovery prefix')
+      .describe('mqtt-last-reset', 'If set, this value is added to mqtt as \'last_reset\'')
+      .string('mqtt-last-reset')
+      .describe('mqtt-last-reset-solar', 'If set, this value is added to mqtt as \'last_reset\'')
+      .string('mqtt-last-reset-solar')
       .describe('influx-url', 'Influxdb server url')
       .describe('influx-token', 'Influxdb server token')
       .describe('influx-bucket', 'Influx bucket')
       .describe('influx-org', 'Influx organization')
       .describe('tcp-server', 'Expose JSON TCP socket on this port')
+      .describe('tcp-server-mqtt', 'Expose JSON TCP socket on this port')
       .describe('raw-tcp-server', 'Expose RAW TCP socket on this port')
       .conflicts('port', 'socket')
       .describe('debug', 'Enable debug output')
@@ -137,6 +145,7 @@ export class ConfigLoader {
       .number('sunspec-modbus-interval')
       .number('web-server')
       .number('tcp-server')
+      .number('tcp-server-mqtt')
       .number('raw-tcp-server')
       .number('post-interval')
       .describe('enc-aad', 'Additional authentication data, if your meter encrypts data (eg. Luxemburg)')
@@ -170,6 +179,10 @@ export class ConfigLoader {
       config.outputs.jsonSocket = args['tcp-server'];
     }
 
+    if (args['tcp-server-mqtt']) {
+      config.outputs.mqttSocket = args['tcp-server-mqtt'];
+    }
+
     if (typeof args['mqtt-url'] === 'string') {
       config.outputs.mqtt = {
         discovery: args['mqtt-discovery'] === true,
@@ -178,6 +191,8 @@ export class ConfigLoader {
         distinctFields: args['mqtt-distinct-fields']?.split(',') ?? defaultMqttConfig.distinctFields ?? [],
         prefix: args['mqtt-topic'] ?? 'smartmeter',
         url: args['mqtt-url'],
+        last_reset: args['mqtt-last-reset'],
+        last_reset_solar: args['mqtt-last-reset-solar'],
       };
     }
 

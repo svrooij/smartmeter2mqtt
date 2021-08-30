@@ -18,6 +18,7 @@ interface MqttDiscoveryMessage {
   device_class?: 'power' | 'current' | 'energy' | 'voltage';
   state_class?: 'measurement';
   json_attributes_topic: string;
+  last_reset_value_template?: string;
   state_topic: string;
   name: string;
   icon?: string;
@@ -118,12 +119,22 @@ export default class MqttOutput implements Output {
         }
       });
     } else {
-      this.sendToMqtt('energy', data);
+      const withLifetime = {
+        ...data,
+        last_reset: this.config.last_reset,
+      };
+      this.sendToMqtt('energy', withLifetime);
     }
   }
 
   private publishSolar(data: Partial<SunspecResult>): void {
-    this.sendToMqtt('solar', data);
+    const kwData = {
+      ...data,
+      lifetimeProductionKwh: ((data.lifetimeProduction || 0) / 1000).toFixed(2),
+      acPowerKwh: ((data.acPower || 0) / 1000).toFixed(3),
+      last_reset: this.config.last_reset_solar,
+    };
+    this.sendToMqtt('solar', kwData);
   }
 
   private sendToMqtt(topicSuffix: string, data: any): void {
@@ -182,6 +193,7 @@ export default class MqttOutput implements Output {
       description.value_template = '{{ value_json.totalT1Use }}';
       description.name = 'Total power used T1';
       description.device_class = 'energy';
+      if (this.config.last_reset) description.last_reset_value_template = '{{ value_json.last_reset }}';
       this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/t1-used/config`, description);
     }
 
@@ -192,6 +204,7 @@ export default class MqttOutput implements Output {
       description.value_template = '{{ value_json.totalT2Use }}';
       description.name = 'Total power used T2';
       description.device_class = 'energy';
+      if (this.config.last_reset) description.last_reset_value_template = '{{ value_json.last_reset }}';
       this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/t2-used/config`, description);
     }
 
@@ -202,6 +215,7 @@ export default class MqttOutput implements Output {
       description.value_template = '{{ value_json.totalT1Delivered }}';
       description.name = 'Total power delivered T1';
       description.device_class = 'energy';
+      if (this.config.last_reset) description.last_reset_value_template = '{{ value_json.last_reset }}';
       this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/t1-delivered/config`, description);
     }
 
@@ -212,6 +226,7 @@ export default class MqttOutput implements Output {
       description.value_template = '{{ value_json.totalT2Delivered }}';
       description.name = 'Total power delivered T2';
       description.device_class = 'energy';
+      if (this.config.last_reset) description.last_reset_value_template = '{{ value_json.last_reset }}';
       this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/t2-delivered/config`, description);
     }
 
@@ -221,19 +236,20 @@ export default class MqttOutput implements Output {
       description.value_template = '{{ value_json.currentTarrif }}';
       description.name = 'Current tarrif';
       delete description.device_class;
+      delete description.last_reset_value_template;
       this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/current-tarrif/config`, description);
     }
 
-    if (data.houseUsage) {
-      description.json_attributes_topic = `${this.config.prefix}/status/usage`;
-      description.state_topic = `${this.config.prefix}/status/usage`;
-      description.unique_id = `smartmeter_${data.powerSn}_house-usage`;
-      description.unit_of_measurement = 'Watt';
-      description.value_template = '{{ value_json.val }}';
-      description.name = 'Current house usage';
-      description.device_class = 'power';
-      this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/house-usage/config`, description);
-    }
+    // if (data.houseUsage) {
+    //   description.json_attributes_topic = `${this.config.prefix}/status/usage`;
+    //   description.state_topic = `${this.config.prefix}/status/usage`;
+    //   description.unique_id = `smartmeter_${data.powerSn}_house-usage`;
+    //   description.unit_of_measurement = 'Watt';
+    //   description.value_template = '{{ value_json.val }}';
+    //   description.name = 'Current house usage';
+    //   description.device_class = 'power';
+    //   this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/house-usage/config`, description);
+    // }
 
     // Total Gas used
     if (data.gasSn) {
@@ -248,6 +264,7 @@ export default class MqttOutput implements Output {
       description.value_template = '{{ value_json.gas.totalUse }}';
       description.name = 'Total gas usage';
       description.icon = 'mdi:gas-cylinder';
+      if (this.config.last_reset) description.last_reset_value_template = '{{ value_json.last_reset }}';
       delete description.device_class;
       this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/gas/config`, description);
     }
@@ -266,22 +283,25 @@ export default class MqttOutput implements Output {
         sw_version: `${this.pkg.name} (${this.pkg.version})`,
       },
       unique_id: `solar-invertor_${solar.serial}_total`,
-      unit_of_measurement: 'Wh',
+      unit_of_measurement: 'kWh',
       json_attributes_topic: `${this.config.prefix}/status/solar`,
       state_topic: `${this.config.prefix}/status/solar`,
       name: 'Lifetime solar production',
       icon: 'mdi:solar-power',
       device_class: 'energy',
       state_class: 'measurement',
-      value_template: '{{ value_json.lifetimeProduction }}',
+      value_template: '{{ value_json.lifetimeProductionKwh }}',
     };
+    if (this.config.last_reset_solar) description.last_reset_value_template = '{{ value_json.last_reset }}';
+
     this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/solar-total/config`, description);
 
     description.name = 'Current solar production';
     description.unique_id = `solar-invertor_${solar.serial}_current`;
-    description.unit_of_measurement = 'Watt';
-    description.value_template = '{{ value_json.acPower }}';
+    description.unit_of_measurement = 'kW';
+    description.value_template = '{{ value_json.acPowerKwh }}';
     description.device_class = 'power';
+    delete description.last_reset_value_template;
     this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/solar-current/config`, description);
   }
 

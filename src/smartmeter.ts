@@ -80,7 +80,12 @@ export default class Smartmeter {
 
     if (this.config.outputs.jsonSocket) {
       console.log(`- Output: JSON TCP socket on port ${this.config.outputs.jsonSocket}`);
-      this.outputs.push(new TcpOutput(this.config.outputs.jsonSocket, false, true));
+      this.outputs.push(new TcpOutput(this.config.outputs.jsonSocket, 'tcp', true));
+    }
+
+    if (this.config.outputs.mqttSocket) {
+      console.log(`- Output: MQTT TCP socket on port ${this.config.outputs.mqttSocket}`);
+      this.outputs.push(new TcpOutput(this.config.outputs.mqttSocket, 'mqtt', true));
     }
 
     if (this.config.outputs.mqtt) {
@@ -95,7 +100,7 @@ export default class Smartmeter {
 
     if (this.config.outputs.rawSocket) {
       console.log(`- Output: Raw TCP socket on port ${this.config.outputs.rawSocket}`);
-      this.outputs.push(new TcpOutput(this.config.outputs.rawSocket, true, true));
+      this.outputs.push(new TcpOutput(this.config.outputs.rawSocket, 'raw', true));
     }
 
     if (this.config.outputs.webserver) {

@@ -5,7 +5,6 @@ import IntervalOutput from './interval-output';
 import P1Reader from '../p1-reader';
 import DsmrMessage from '../dsmr-message';
 import GasValue from '../gas-value';
-import BaseSolarReader from '../solar/base-solar-input';
 
 export default class HttpOutput extends IntervalOutput {
   constructor(private config: HttpPostConfig) {
@@ -25,9 +24,9 @@ export default class HttpOutput extends IntervalOutput {
       }));
   }
 
-  addSolar(solarReader: BaseSolarReader): void {
+  // addSolar(solarReader: BaseSolarReader): void {
 
-  }
+  // }
 
   private sendEvent(data: DsmrMessage): Promise<Response> {
     const flatData = this.config.fields
