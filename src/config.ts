@@ -99,59 +99,84 @@ export class ConfigLoader {
 
   public static LoadConfigFromArguments(): Partial<SmartmeterConfig> {
     const pkg = ConfigLoader.LoadPackageData();
-    const args = yargs
+    const options = yargs
       .env('SMARTMETER')
       .usage(`${pkg.name} ${pkg.version}\n${pkg.description
       }\n\nRead from P1 to USB serial:\n$0 --port /dev/ttyUSB0 [options]`
         + '\n\nRead from tcp socket:\n$0 --socket host:port [options]')
       .epilog('All options can also be specified as Environment valiables'
         + '\r\nPrefix them with \'SMARTMETER_\' and make them all uppercase')
+      .options({
+        port: { type: 'string' },
+        socket: { type: 'string' },
+        debug: { type: 'boolean' },
+        'web-server': { type: 'number' },
+        'tcp-server': { type: 'number' },
+        'raw-tcp-server': { type: 'number' },
+        'tcp-server-mqtt': { type: 'number' },
+
+        'post-url': { type: 'string' },
+        'post-interval': { type: 'number' },
+        'post-json': { type: 'boolean' },
+        'post-fields': { type: 'string' },
+
+        'mqtt-url': { type: 'string' },
+        'mqtt-topic': { type: 'string' },
+        'mqtt-distinct': { type: 'boolean' },
+        'mqtt-distinct-fields': { type: 'string' },
+        'mqtt-discovery': { type: 'boolean' },
+        'mqtt-discovery-prefix': { type: 'string' },
+        'mqtt-last-reset': { type: 'string' },
+        'mqtt-last-reset-solar': { type: 'string' },
+
+        'influx-url': { type: 'string' },
+        'influx-token': { type: 'string' },
+        'influx-bucket': { type: 'string' },
+        'influx-org': { type: 'string' },
+
+        'enc-aad': { type: 'string' },
+        'enc-key': { type: 'string' },
+
+        'sunspec-modbus': { type: 'string' },
+        'sunspec-modbus-port': { type: 'number' },
+        'sunspec-interval': { type: 'number' },
+      })
       .describe('port', 'The serial port to read, P1 to serial usb, eg. \'/dev/ttyUSB0\'')
       .describe('socket', 'The tcp socket to read, if reading from serial to network device, as host:port, like \'192.168.0.3:3000\'')
+      .conflicts('port', 'socket')
+
+      .describe('debug', 'Enable debug output')
+      .describe('tcp-server', 'Expose JSON TCP socket on this port')
+      .describe('tcp-server-mqtt', 'Expose JSON TCP socket on this port')
+      .describe('raw-tcp-server', 'Expose RAW TCP socket on this port')
       .describe('web-server', 'Expose webserver on this port')
+
       .describe('post-url', 'Post the results to this url')
       .describe('post-interval', 'Seconds between posts')
       .describe('post-json', 'Post the data as json instead of form parameters')
       .describe('post-fields', 'Fields to post')
-      .string('post-fields')
-      .boolean('post-json')
+      
       .describe('mqtt-url', 'Send the data to this mqtt server')
       .describe('mqtt-topic', 'Use this topic prefix for all messages')
       .describe('mqtt-distinct', 'Publish data distinct to mqtt')
-      .boolean('mqtt-distinct')
       .describe('mqtt-distinct-fields', 'A comma separated list of fields you want published distinct.')
-      .string('mqtt-distinct-fields')
       .describe('mqtt-discovery', 'Emit auto-discovery message')
-      .boolean('mqtt-discovery')
       .describe('mqtt-discovery-prefix', 'Autodiscovery prefix')
       .describe('mqtt-last-reset', 'If set, this value is added to mqtt as \'last_reset\'')
-      .string('mqtt-last-reset')
       .describe('mqtt-last-reset-solar', 'If set, this value is added to mqtt as \'last_reset\'')
-      .string('mqtt-last-reset-solar')
+
       .describe('influx-url', 'Influxdb server url')
       .describe('influx-token', 'Influxdb server token')
       .describe('influx-bucket', 'Influx bucket')
       .describe('influx-org', 'Influx organization')
-      .describe('tcp-server', 'Expose JSON TCP socket on this port')
-      .describe('tcp-server-mqtt', 'Expose JSON TCP socket on this port')
-      .describe('raw-tcp-server', 'Expose RAW TCP socket on this port')
-      .conflicts('port', 'socket')
-      .describe('debug', 'Enable debug output')
-      .boolean('debug')
+
       .describe('sunspec-modbus', 'IP of solar inverter with modbus TCP enabled')
       .describe('sunspec-modbus-port', 'modbus TCP port')
       .describe('sunspec-interval', 'Interval for solar reading')
-      .number('sunspec-modbus-port')
-      .number('sunspec-modbus-interval')
-      .number('web-server')
-      .number('tcp-server')
-      .number('tcp-server-mqtt')
-      .number('raw-tcp-server')
-      .number('post-interval')
+
       .describe('enc-aad', 'Additional authentication data, if your meter encrypts data (eg. Luxemburg)')
-      .string('enc-aad')
       .describe('enc-key', 'Decryption key. Request from energy company')
-      .string('enc-key')
+      
       .alias({
         h: 'help',
       })
@@ -164,8 +189,9 @@ export class ConfigLoader {
       })
       .wrap(80)
       .version()
-      .help('help')
-      .argv;
+      .help('help');
+
+    const args = options.parseSync();
 
     const config = {
       serialPort: args.port,

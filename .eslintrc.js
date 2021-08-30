@@ -19,6 +19,18 @@ module.exports = {
     "max-len":"off",
     "no-console": "off",
     "linebreak-style": "off",
-    "constructor-super": "warn"
-  }
+    "constructor-super": "warn",
+    "import/no-extraneous-dependencies": "off",
+    "import/extensions": [
+      "off",
+      // "ignorePackages",
+      // {
+      //   "js": "never",
+      //   "jsx": "never",
+      //   "ts": "never",
+      //   "tsx": "never"
+      // }
+    ]
+  },
+  
 };

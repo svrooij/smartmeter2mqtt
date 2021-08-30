@@ -78,7 +78,7 @@ export default class P1Reader extends (EventEmitter as new () => TypedEmitter<Ty
   // Inverter stuff
   // private solarInput?: SolarInput;
 
-  constructor(options?: { key: string; aad: string}) {
+  constructor(options?: { key: string; aad: string }) {
     super();
     this.usage = 0;
     this.gasUsage = 0;

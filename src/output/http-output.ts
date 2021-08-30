@@ -46,11 +46,11 @@ export default class HttpOutput extends IntervalOutput {
     });
   }
 
-  private filterData(data: DsmrMessage): {[key: string]: string | number | Array<string> | GasValue | boolean | undefined} {
+  private filterData(data: DsmrMessage): { [key: string]: string | number | Array<string> | GasValue | boolean | undefined } {
     if (this.config.fields === undefined) {
       return data;
     }
-    const result: {[key: string]: string | number | Array<string> | GasValue | boolean | undefined} = {};
+    const result: { [key: string]: string | number | Array<string> | GasValue | boolean | undefined } = {};
     Object.keys(data)
       .filter((key) => this.config.fields?.includes(key))
       .forEach((key) => {

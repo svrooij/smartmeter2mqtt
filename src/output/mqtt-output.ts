@@ -75,7 +75,7 @@ export default class MqttOutput implements Output {
 
   async close(): Promise<void> {
     return new Promise((resolve) => {
-      this.mqtt?.end(false, {}, resolve);
+      this.mqtt?.end(false, {}, () => { resolve(); });
     });
   }
 
