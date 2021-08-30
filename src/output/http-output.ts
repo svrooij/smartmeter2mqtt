@@ -24,6 +24,10 @@ export default class HttpOutput extends IntervalOutput {
       }));
   }
 
+  // addSolar(solarReader: BaseSolarReader): void {
+
+  // }
+
   private sendEvent(data: DsmrMessage): Promise<Response> {
     const flatData = this.config.fields
       ? this.filterData(HttpOutput.flatten(data))

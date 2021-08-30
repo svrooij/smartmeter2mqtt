@@ -3,9 +3,13 @@ let socket = null;
 let reconnectCount = 1;
 let socketReconnectTimeout = null;
 
+let solarData = null;
+let powerData = null;
+
 // eslint-disable-next-line no-unused-vars
 function loadData() { // this function is run on page load.
   if (WebSocket) {
+    refreshData(false);
     createSocket();
   } else {
     refreshData();
@@ -18,10 +22,17 @@ function createSocket() {
   const wsUrl = `${protocol}://${window.location.hostname}:${window.location.port}/`;
   socket = new WebSocket(wsUrl);
   socket.onmessage = (msg) => {
-    const data = JSON.parse(msg.data);
+    const parsedMsg = JSON.parse(msg.data);
     // console.log('Got data from server %s', JSON.stringify(data, null, 2))
-    if (!data.err) updateData(data);
-    else console.log('Got error message %s', data.err);
+    if (parsedMsg.err) {
+      console.error(err);
+      return;
+    }
+    if (parsedMsg.topic === 'dsmr') updateData(parsedMsg.payload);
+    else if (parsedMsg.topic === 'solar') updateSolar(parsedMsg.payload);
+    else {
+      console.log(parsedMsg);
+    }
   };
   socket.onopen = (ev) => {
     reconnectCount = 1;
@@ -45,16 +56,23 @@ function checkSocketConnection() {
   }
 }
 
-function refreshData() {
+function refreshData(autoRefresh = true) {
   $.getJSON('/api/reading', (data) => {
     if (data && !data.err) {
       updateData(data);
     }
-    setTimeout(refreshData, 10000);
+    if (autoRefresh)
+      setTimeout(refreshData, 10000);
   });
+
+  $.getJSON('/api/solar', (data) => {
+    updateSolar(data);
+  })
 }
 
 function updateData(data) {
+  powerData = data;
+  console.log('Power', data);
   if (data.calculatedUsage < 0) {
     $('.delivery').show();
     $('.usage').hide();
@@ -90,10 +108,31 @@ function updateData(data) {
   gas = Math.round(gas * 100.0) / 100.0;
   $('.totalGas').text(gas);
 
+  updateHouseUsage();
+
   if(data.houseUsage) {
     // Load solar
     $('.houseUsage').text(data.houseUsage);
     $('.solarProduction').text(Math.round(data.solarProduction));
     $('.solar').removeClass('hide');
+  }
+}
+
+function updateSolar(data) {
+  solarData = data;
+  //console.log('Solar data', data);
+  $('#sun-card').removeClass('hide');
+  $('.sunProduction').text(Math.round(data.acPower || 0));
+  $('.sunTotal')
+    .text(Math.round((data.lifetimeProduction  || 0) / 10) * 10 / 1000)
+    .attr('title', (data.lifetimeProduction / 1000).toFixed(2));
+  //updateHouseUsage();
+}
+
+function updateHouseUsage() {
+  if (solarData && powerData) {
+    $('.solar').removeClass('hide');
+    let houseUsage = (solarData.acPower + (powerData.currentUsage * 1000) - (powerData.currentDelivery * 1000)).toFixed(0);
+    $('.houseUsage').text(houseUsage);
   }
 }

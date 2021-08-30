@@ -6,11 +6,15 @@ import TcpOutput from './output/tcp-output';
 import MqttOutput from './output/mqtt-output';
 import HttpOutput from './output/http-output';
 import DebugOutput from './output/debug-output';
-import ModbusSolarInput from './modbus-solar-input';
 import { InfluxOutput } from './output/influx-output';
+
+import ModbusSolarInput from './solar/modbus-solar-input';
+import BaseSolarReader from './solar/base-solar-input';
 
 export default class Smartmeter {
   private reader: P1Reader;
+
+  private solar?: BaseSolarReader;
 
   private outputs: Array<Output> = [];
 
@@ -44,7 +48,8 @@ export default class Smartmeter {
       process.exit(2);
     }
     if (this.config.solar) {
-      this.reader.addSolarInput(new ModbusSolarInput(this.config.solar.host, this.config.solar.port));
+      this.solar = new ModbusSolarInput(this.config.solar.host, this.config.solar.port, this.config.solar.interval);
+      // this.reader.addSolarInput(this.solar);
     }
 
     this.addDefaultOutputs();
@@ -52,6 +57,9 @@ export default class Smartmeter {
   }
 
   async stop(): Promise<void> {
+    if (this.solar) {
+      this.solar.close();
+    }
     await Promise.all(this.outputs.map((output) => output.close())).catch((err) => {
       console.warn(err);
     });
@@ -72,7 +80,12 @@ export default class Smartmeter {
 
     if (this.config.outputs.jsonSocket) {
       console.log(`- Output: JSON TCP socket on port ${this.config.outputs.jsonSocket}`);
-      this.outputs.push(new TcpOutput(this.config.outputs.jsonSocket, false, true));
+      this.outputs.push(new TcpOutput(this.config.outputs.jsonSocket, 'tcp', true));
+    }
+
+    if (this.config.outputs.mqttSocket) {
+      console.log(`- Output: MQTT TCP socket on port ${this.config.outputs.mqttSocket}`);
+      this.outputs.push(new TcpOutput(this.config.outputs.mqttSocket, 'mqtt', true));
     }
 
     if (this.config.outputs.mqtt) {
@@ -87,7 +100,7 @@ export default class Smartmeter {
 
     if (this.config.outputs.rawSocket) {
       console.log(`- Output: Raw TCP socket on port ${this.config.outputs.rawSocket}`);
-      this.outputs.push(new TcpOutput(this.config.outputs.rawSocket, true, true));
+      this.outputs.push(new TcpOutput(this.config.outputs.rawSocket, 'raw', true));
     }
 
     if (this.config.outputs.webserver) {
@@ -104,6 +117,9 @@ export default class Smartmeter {
       this.reader.startParsing();
       this.outputs.forEach((output) => {
         output.start(this.reader);
+        if (this.solar) {
+          output.addSolar(this.solar);
+        }
       });
     }
   }

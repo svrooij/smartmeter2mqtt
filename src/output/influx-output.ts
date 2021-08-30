@@ -1,5 +1,6 @@
 import { InfluxDB, Point, WriteApi } from '@influxdata/influxdb-client';
 import P1Reader from '../p1-reader';
+import BaseSolarReader from '../solar/base-solar-input';
 import { Output } from './output';
 
 export interface InfluxOutputOptions {
@@ -47,6 +48,18 @@ export class InfluxOutput implements Output {
         if (dsmr.houseUsage) powerUsage.floatField('house', dsmr.houseUsage);
         if (dsmr.solarProduction) powerUsage.floatField('production', dsmr.solarProduction);
         this.writeApi.writePoint(powerUsage);
+      }
+    });
+  }
+
+  addSolar(solarReader: BaseSolarReader): void {
+    solarReader.on('solar', (data) => {
+      const solarPoint = new Point('solar');
+      if (data.serial) solarPoint.tag('invertor', data.serial);
+      if (data.acPower && data.lifetimeProduction) {
+        solarPoint.intField('lifetime-production', data.lifetimeProduction);
+        solarPoint.floatField('ac-power', data.acPower);
+        this.writeApi.writePoint(solarPoint);
       }
     });
   }

@@ -1,17 +1,20 @@
-import EventEmitter from 'events';
+import { EventEmitter } from 'events';
 import TypedEmitter from 'typed-emitter';
+import { SunspecResult } from '@svrooij/sunspec/lib/sunspec-result';
 import P1Reader, { Usage } from '../p1-reader';
 import { Output } from './output';
 import DsmrMessage from '../dsmr-message';
+import BaseSolarReader from '../solar/base-solar-input';
 
 
 interface IntervalOutputEvents {
   dsmr: (result: DsmrMessage) => void;
   gasUsage: (usage: Usage) => void;
   usage: (usage: Usage) => void;
+  solar: (solar: Partial<SunspecResult>) => void;
 }
 
-export default abstract class IntervalOutput extends (EventEmitter as unknown as new () => TypedEmitter<IntervalOutputEvents>) implements Output {
+export default abstract class IntervalOutput extends (EventEmitter as new () => TypedEmitter<IntervalOutputEvents>) implements Output {
   private timer?: NodeJS.Timeout;
 
   private publishNextEvent: boolean;
@@ -44,6 +47,10 @@ export default abstract class IntervalOutput extends (EventEmitter as unknown as
     this.timer = setInterval(() => {
       this.publishNextEvent = true;
     }, (this.interval ?? 60) * 1000);
+  }
+
+  addSolar(solarReader: BaseSolarReader): void {
+    solarReader.on('solar', (data) => { this.emit('solar', data); });
   }
 
   close(): Promise<void> {
