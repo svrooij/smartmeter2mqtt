@@ -19,15 +19,14 @@ email: 1292510+svrooij@users.noreply.github.com
 #   Write an awesome description for your new site here. You can edit this
 #   line in _config.yml. It will appear in your document head meta (for
 #   Google search results) and in your feed.xml site description.
-baseurl: "/smartmeter2mqtt" # the subpath of your site, e.g. /blog
-url: "https://svrooij.io" # the base hostname & protocol for your site, e.g. http://example.com
+
 twitter_username: svrooij
 github_username:  svrooij
 repository: svrooij/smartmeter2mqtt
 
 # Build settings
 markdown: kramdown
-remote_theme: svrooij/just-the-docs@relative-everything
+remote_theme: svrooij/just-the-docs@plausible
 plugins:
   - jekyll-feed
   - jemoji
@@ -55,7 +54,7 @@ aux_links:
     - "//github.com/sponsors/svrooij/"
 
 # Footer content appears at the bottom of every page's main content
-footer_content: "Copyright &copy; 2021 Stephan van Rooij. Distributed by an <a href=\"https://github.com/svrooij/smartmeter2mqtt/tree/master/LICENSE\">MIT license.</a>"
+footer_content: "Copyright &copy; 2023 Stephan van Rooij. Distributed by an <a href=\"https://github.com/svrooij/smartmeter2mqtt/tree/beta/LICENSE\">MIT license.</a>"
 
 toc:
   max_levels: 2
@@ -64,8 +63,10 @@ toc:
 gh_edit_link: true # show or hide edit this page link
 gh_edit_link_text: "Source on Github"
 gh_edit_repository: "https://github.com/svrooij/smartmeter2mqtt" # the github URL for your repo
-gh_edit_branch: "master/docs" # the branch that your docs is served from
+gh_edit_branch: "beta/docs" # the branch that your docs is served from
 gh_edit_view_mode: "tree" # "tree" or "edit" if you want the user to jump into the editor immediately
 
-ga_tracking: UA-172036806-1
-ga_tracking_anonymize_ip: true
+# ga_tracking: UA-172036806-1
+# ga_tracking_anonymize_ip: true
+
+plausible_domain: "smartmeter2mqtt.svrooij.io"
