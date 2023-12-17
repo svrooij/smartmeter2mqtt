@@ -161,13 +161,15 @@ export default class MqttOutput implements Output {
       state_topic: `${this.config.prefix}/status/energy`,
       name: 'Current power usage',
       icon: 'mdi:transmission-tower',
-      unit_of_measurement: 'Watt',
+      unit_of_measurement: 'W',
       value_template: '{{ value_json.calculatedUsage }}',
       unique_id: `smartmeter_${data.powerSn}_current-usage`,
     };
 
     this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/power-usage/config`, description);
-
+    
+    description.state_class = 'total_increasing';
+    
     if (data.totalImportedEnergyP) {
       description.unique_id = `smartmeter_${data.powerSn}_total_imported`;
       description.unit_of_measurement = 'kWh';
@@ -236,6 +238,7 @@ export default class MqttOutput implements Output {
       description.value_template = '{{ value_json.currentTarrif }}';
       description.name = 'Current tarrif';
       delete description.device_class;
+      delete description.state_class;
       delete description.last_reset_value_template;
       this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/current-tarrif/config`, description);
     }
@@ -264,8 +267,9 @@ export default class MqttOutput implements Output {
       description.value_template = '{{ value_json.gas.totalUse }}';
       description.name = 'Total gas usage';
       description.icon = 'mdi:gas-cylinder';
+      description.device_class = 'gas';
+      description.state_class = 'total_increasing';
       if (this.config.last_reset) description.last_reset_value_template = '{{ value_json.last_reset }}';
-      delete description.device_class;
       this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/gas/config`, description);
     }
   }
