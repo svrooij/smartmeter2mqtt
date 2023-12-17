@@ -168,7 +168,7 @@ export default class MqttOutput implements Output {
 
     this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/power-usage/config`, description);
     
-    delete description.state_class;
+    description.state_class = 'total_increasing';
     
     if (data.totalImportedEnergyP) {
       description.unique_id = `smartmeter_${data.powerSn}_total_imported`;
@@ -238,6 +238,7 @@ export default class MqttOutput implements Output {
       description.value_template = '{{ value_json.currentTarrif }}';
       description.name = 'Current tarrif';
       delete description.device_class;
+      delete description.state_class;
       delete description.last_reset_value_template;
       this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/current-tarrif/config`, description);
     }
@@ -267,6 +268,7 @@ export default class MqttOutput implements Output {
       description.name = 'Total gas usage';
       description.icon = 'mdi:gas-cylinder';
       description.device_class = 'gas';
+      description.state_class = 'total_increasing';
       if (this.config.last_reset) description.last_reset_value_template = '{{ value_json.last_reset }}';
       this.publishDiscoveryMessage(`${this.config.discoveryPrefix}/sensor/${this.config.prefix}/gas/config`, description);
     }
