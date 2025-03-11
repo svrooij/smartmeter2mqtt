@@ -1,25 +1,25 @@
-FROM node:16-alpine as node-original
-FROM node-original as install
+FROM node:22-bookworm-slim AS node-original
+FROM node-original AS install
 WORKDIR /usr/src/app
 COPY package*.json ./
-RUN apk update && \
-  apk add --no-cache make gcc g++ python3 linux-headers udev
-RUN npm ci --only=production
+RUN apt-get update && \
+  apt-get install -y make python3 udev gcc g++
+RUN npm install --omit=dev
 
-FROM install as compile
-RUN npm install
+FROM install AS compile
+#RUN npm install
 COPY ./src/ ./src/
 COPY tsconfig.json ./
 RUN npm run prepack
 
-FROM node-original as combiner
+FROM node-original AS combiner
 WORKDIR /usr/src/app
 COPY --from=install /usr/src/app/node_modules /usr/src/app/node_modules
 COPY --from=install /usr/src/app/package.json /usr/src/app/package.json
 COPY bin/run /usr/src/app/bin/run
 COPY --from=compile /usr/src/app/dist /usr/src/app/dist
 
-FROM node-original as production
+FROM node-original AS production
 ARG BUILD_DATE=unknown
 ARG BUILD_VERSION=0.0.0-development
 ARG VCS_REF=not-set
