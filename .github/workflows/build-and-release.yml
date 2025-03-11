@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: 22
       - name: Install depencencies
-        run: npm ci
+        run: npm install
       - name: Run tests
         run: npm test
       - name: Send data to Coveralls
